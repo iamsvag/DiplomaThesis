@@ -67,6 +67,7 @@ def build_kernel_matrix(graphs, depth):
 
     """
     N = len(graphs)
+    print(N)
 
     sp = list()
     norm = list()

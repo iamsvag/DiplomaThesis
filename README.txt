@@ -1,3 +1,4 @@
+last update 19/10
 ### Requirements
 Code is written in Python 3.6 and requires:
 * NetworkX 2.0
@@ -40,7 +41,7 @@ python spgk.py data/subjectivity.pos data/subjectivity.neg 2 1
     2. create an edge between the word and it's neihgbors. take into account the repeated words 
      
   3. at the end each element of the list `graphs` holds the graph of each line in `doc` 
-10. kernel..:
+10. build_kernel_matrix:
   1. find shortest path of each graph element
   2. each element of the sp list contains the dict which contains the neihgbors of each node in `depth`
   3. sp_g: contains the same graph but weighted
