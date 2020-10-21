@@ -1,0 +1,158 @@
+"""
+Created on Fri Apr 14 2017
+
+@author: g.nikolentzos
+
+"""
+
+import sys
+import csv 
+import numpy as np
+import networkx as nx
+from tqdm import tqdm
+from utils import load_file, preprocessing, get_vocab, learn_model_and_predict
+
+def create_graphs_of_words(docs, window_size):
+    """ 
+    Create graphs of words
+
+    """
+    graphs = list()
+    sizes = list()
+    degs = list()
+
+    for doc in docs:
+        G = nx.Graph()
+        for i in range(len(doc)):
+            if doc[i] not in G.nodes():
+                G.add_node(doc[i])
+            for j in range(i+1, i+window_size):
+                if j < len(doc):
+                    G.add_edge(doc[i], doc[j])
+
+        graphs.append(G)
+        sizes.append(G.number_of_nodes())
+        degs.append(2.0*G.number_of_edges()/G.number_of_nodes())
+
+    print("Average number of nodes:", np.mean(sizes))
+    print("Average degree:", np.mean(degs))
+
+    return graphs
+
+
+def spgk(sp_g1, sp_g2, norm1, norm2):
+    """ 
+    Compute spgk kernel
+
+    """
+    if norm1 == 0 or norm2==0:
+        return 0
+    else:
+        kernel_value = 0
+        for node1 in sp_g1:
+            if node1 in sp_g2:
+                kernel_value += 1
+                for node2 in sp_g1[node1]:
+                    if node2 != node1 and node2 in sp_g2[node1]:
+                        kernel_value += (1.0/sp_g1[node1][node2]) * (1.0/sp_g2[node1][node2])
+
+        kernel_value /= (norm1 * norm2)
+        print(kernel_value)
+        
+        return kernel_value
+
+
+def build_kernel_matrix(graphs, depth):
+    """ 
+    Build kernel matrices
+
+    """
+    N = len(graphs)
+
+    sp = list()
+    norm = list()
+
+    print("\nGraph preprocessing progress:")
+    for g in tqdm(graphs):
+        current_sp = dict(nx.all_pairs_dijkstra_path_length(g, cutoff=depth))
+        sp.append(current_sp)
+
+        sp_g = nx.Graph()
+        for node in current_sp:
+            for neighbor in current_sp[node]:
+                if node == neighbor:
+                    sp_g.add_edge(node, node, weight=1.0)
+                else:
+                    sp_g.add_edge(node, neighbor, weight=1.0/current_sp[node][neighbor])
+
+        M = nx.to_numpy_matrix(sp_g)
+        norm.append(np.linalg.norm(M,'fro'))
+
+    K = np.zeros((N, N))
+
+    print("\nKernel computation progress:")
+    for i in tqdm(range(N)):
+        for j in range(i, N):
+            K[i,j] = spgk(sp[i], sp[j], norm[i], norm[j])
+            K[j,i] = K[i,j]
+
+    return K
+
+
+def main():
+    """ 
+    Main function
+
+    """
+    fields=[]
+    rows =[]
+    filename_pos = sys.argv[1]
+    print(filename_pos)
+    #filename_neg = sys.argv[2]
+    window_size = int(sys.argv[2])
+    depth = int(sys.argv[3])
+      #  reading csv file 
+    with open(filename_pos, 'r') as csvfile: 
+        # creating a csv reader object 
+        csvreader = csv.reader(csvfile)
+        fields = next(csvreader) 
+        print(fields)
+        for row in csvreader: 
+            rows.append(row) 
+       # print(rows[0])
+
+        line = rows[0]
+        print(line)
+
+            # get number of columns
+        #for line in csvfile.readlines():
+        #array = line.split(',')
+        print(line[1])
+  
+        docs_pos = preprocessing(line[1])
+        labels_pos = []
+        for i in range(len(docs_pos)):
+            labels_pos.append(1)
+
+        docs_neg = load_file(filename_neg)
+        docs_neg = preprocessing(docs_neg)
+        labels_neg = []
+        for i in range(len(docs_neg)):
+            labels_neg.append(0)
+
+        docs = docs_pos
+        docs.extend(docs_neg)
+        labels = labels_pos
+        labels.extend(labels_neg)
+        labels = np.array(labels)
+
+        vocab = get_vocab(docs)
+        print("Vocabulary size: ", len(vocab))
+
+        graphs = create_graphs_of_words(docs, window_size)
+        K = build_kernel_matrix(graphs, depth)
+
+        learn_model_and_predict(K, labels)
+
+if __name__ == "__main__":
+    main()
