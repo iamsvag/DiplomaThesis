@@ -20,6 +20,7 @@ python3 spgk.py data/subjectivity.pos data/subjectivity.neg 2 1
 
 where "filepos" and "fileneg" point to the positive examples and negative examples respectively, "window_size" is the size of the sliding window, and "depth" is the maximum length of shortest paths that are taken into account
 
+from ubuntu enviroment to windows desktop
 
 ### Examples
 Example command: 
