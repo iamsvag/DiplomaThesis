@@ -56,7 +56,7 @@ def spgk(sp_g1, sp_g2, norm1, norm2):
                         kernel_value += (1.0/sp_g1[node1][node2]) * (1.0/sp_g2[node1][node2])
 
         kernel_value /= (norm1 * norm2)
-        print(kernel_value)
+        #print(kernel_value)
         
         return kernel_value
 
@@ -67,7 +67,7 @@ def build_kernel_matrix(graphs, depth):
 
     """
     N = len(graphs)
-    print(N)
+    #print(N)
 
     sp = list()
     norm = list()
@@ -114,7 +114,9 @@ def main():
         depth = int(sys.argv[4])
 
         docs_pos = load_file(filename_pos)
+       # print(docs_pos)
         docs_pos = preprocessing(docs_pos)
+        print(docs_pos)
         labels_pos = []
         for i in range(len(docs_pos)):
             labels_pos.append(1)

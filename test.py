@@ -9,7 +9,7 @@ def main():
     fields=[]
     rows =[]
     filename_pos = sys.argv[1]
-    print(filename_pos)
+    #print(filename_pos)
     #filename_neg = sys.argv[2]
     window_size = int(sys.argv[2])
     depth = int(sys.argv[3])
@@ -18,19 +18,20 @@ def main():
         # creating a csv reader object 
         csvreader = csv.reader(csvfile)
         fields = next(csvreader) 
-        print(fields)
+       # print(fields)
         for row in csvreader: 
             rows.append(row) 
        # print(rows[0])
 
         line = rows[0]
-        print(line)
+       # print(line)
 
             # get number of columns
         #for line in csvfile.readlines():
         #array = line.split(',')
-        print(line[1])
-        print("---------------------")
+       # print(line[1])
+       # print("---------------------")
+        #print(rows[0][1])
         docs_pos = preprocessing(rows[:][1])
         print(docs_pos)
         #print(array)

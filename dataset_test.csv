@@ -1,0 +1,39 @@
+label,text
+jjenkins,"Windows: __declspec(dllexport) specified when building arrow static library As I understand it, dllexport/dllimport should be left out when building and using static libraries on Windows. A PR will follow shortly."
+hanishakoneru,"Update description for dfs.datanode.outliers.report.interval dfs.datanode.outliers.report.interval is used to control how frequently DataNodes will report their peer latencies to the NameNode via heartbeats. From HDFS-11461 onwards, this setting is also used to set the interval between datanode disk outliers detection.
+The description for this setting should be updated in hdfs-default.xml to capture this change."
+jingzhao,"Refactor o.a.h.nfs to support different types of authentications 1. Add Credentials and Verifier definitions. 
+2. Update Nfs3Interface.java and add SessionSecurityHandler to allow the support of different types of authentications.
+3. Update RpcProgrammNfs3.java to move the original AUTH_SYS authentication into the new interfaces."
+whitlock,Filenames that wsdl2ws generates Wsdl2ws should generate .hpp files for C++ so that it does not overwrite the .h files that it generates for C. Also the generated names of stubs and skeletons should be different since currently they overwrite one another if output to the same directory.
+hermwong,Update Whitelisting Documentation for webOS Please complete the webOS section on whitelist configuration and include any syntax quirks. The specified syntax is based on the [W3C Widget Access specification|http://www.w3.org/TR/widgets-access/].
+roller_unassigned,"Verify labels using a double apostrophe are outputting correctly Some labels require a double apostrophe and some don't depending on where they are output. Need to verify that labels using a double apostrophe are outputting correctly. This affected page hits, but Matthew Montgomery (Sun) corrected this one instance: Today''s Page Hits: 9 "
+sur,Configure a custom webui_url for the Spark Mesos Framework Previously the Mesos framework webui URL was being derived only from the Spark UI address leaving no possibility to configure it. This issue proposes to make it configurable. If unset it falls back to the previous behavior.
+adobejira,"Changing states in a document no longer passes through to some FCK containers Steps to reproduce:
+1. Compile and run attached builder project
+2. Click on the control bar button
+3.
+ 
+ Actual Results:
+ 
+The state doesn't change in the FCK container.
+ 
+ Expected Results:
+ 
+The state should change in the FCK container.  (It used to prior to svn 12786).
+ 
+ Workaround (if any):"
+reto,/tools/editor/post to support different serialization format 
+adobejira,"Within the selectionChanged event of a spark List control, the currentTarget.selectedItem represents the previous selected item in stead of the newly selected one. Steps to reproduce:
+1. <s:List dataProvider=""{dataCollection}"" selectionChanged=""selectionChangedHandler(event)""/>
+2. selectionChangedHandler(event:IndexChangedEvent) -> event.currentTarget.selectedIndex is equal to event.oldIndex
+3.
+ 
+ Actual Results:
+ event.currentTarget.selectedIndex is equal to event.oldIndex
+ 
+ Expected Results:
+ event.currentTarget.selectedIndex is equal to event.newIndex
+ 
+ Workaround (if any):
+ Use the event.newIndex to query the dataprovider of the component for the newly selected item"
