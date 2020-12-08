@@ -14,9 +14,9 @@ while True:
     except OverflowError:
         maxInt = int(maxInt/10)
 
-with open('negative.neg', "w") as my_output_Neg_file:
- with open('positive.pos', "w") as my_output_Pos_file:
-  data = pd.read_csv('csvneg.csv',usecols=[0,1,2,4,7],engine="python")
+with open('negative500.neg', "w") as my_output_Neg_file:
+ with open('positive500.pos', "w") as my_output_Pos_file:
+  data = pd.read_csv('csv500.csv',usecols=[0,1,2,4,7],engine="python")
 
   df = pd.DataFrame(data)
 

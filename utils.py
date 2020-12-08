@@ -76,6 +76,7 @@ def get_vocab(docs):
 
 
 def learn_model_and_predict(K, labels):
+    #print(K,labels)
     """
     Given a kernel matrix, performs 10-fold cross-validation using an SVM and returns classification accuracy.
     At each iteration the optimal value of parameter C is determined using again cross-validation.
@@ -102,14 +103,16 @@ def learn_model_and_predict(K, labels):
 
     #Perform k-fold cv
     for train_indices_kf, test_indices_kf in kf.split(K,labels):
-		
+	  
         labels_current = labels[train_indices_kf]
-         
+        #print(train_indices_kf,test_indices_kf)   
         K_train = K[np.ix_(train_indices_kf, train_indices_kf)]
         labels_train = labels[train_indices_kf]
-
+        print(K_train,labels_train)
+        print("-----------------------------------------------------------------")
         K_test = K[np.ix_(test_indices_kf, train_indices_kf)]
-        labels_test = labels[test_indices_kf]
+           = labels[test_indices_kf]
+        print(K_test,labels_test)
 
         # Optimize parameter C
         sss = StratifiedShuffleSplit(n_splits=1, test_size=0.1, random_state=None)
@@ -145,3 +148,31 @@ def learn_model_and_predict(K, labels):
     print("\nAverage accuracy: ", result["mean_accuracy"])
     print("Average macro f1-score: ", result["mean_f1_score"])
     print("-------------------------------------------------")
+
+
+
+    def learn_and_predict(K, labels):
+
+    
+        #  for train_indices_kf, test_indices_kf in kf.split(K,labels):
+        #      labels_current = labels[train_indices_kf]
+        #         #print(train_indices_kf,test_indices_kf)   
+        #         K_train = K[np.ix_(train_indices_kf, train_indices_kf)]
+        #         labels_train = labels[train_indices_kf]
+
+        #         K_test = K[np.ix_(test_indices_kf, train_indices_kf)]
+        #         labels_test = labels[test_indices_kf]
+
+        K_train = K.fit_transform()
+        K_test = K.fit_transform(K)
+
+            # Train an SVM classifier and make predictions
+        clf = SVC(kernel='precomputed')
+            # clf.fit(K_train, labels_train) 
+        clf.fit(K_train)
+        y_pred = clf.predict(K_test)
+
+      # Evaluate the predictions
+        print("Accuracy:", accuracy_score(y_pred, y_test))
+
+

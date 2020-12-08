@@ -116,7 +116,7 @@ def main():
         docs_pos = load_file(filename_pos)
        # print(docs_pos)
         docs_pos = preprocessing(docs_pos)
-        print(docs_pos)
+       # print(docs_pos)
         labels_pos = []
         for i in range(len(docs_pos)):
             labels_pos.append(1)
