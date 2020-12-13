@@ -74,6 +74,7 @@ def get_vocab(docs):
         
     return vocab
 
+
 def learn_model_and_predict(K, labels):
     #print(K,labels)
     """
@@ -150,28 +151,28 @@ def learn_model_and_predict(K, labels):
 
 
 
-    def learn_and_predict(K, labels):
+    # def learn_and_predict(K, labels):
 
     
-        #  for train_indices_kf, test_indices_kf in kf.split(K,labels):
-        #      labels_current = labels[train_indices_kf]
-        #         #print(train_indices_kf,test_indices_kf)   
-        #         K_train = K[np.ix_(train_indices_kf, train_indices_kf)]
-        #         labels_train = labels[train_indices_kf]
+    #     #  for train_indices_kf, test_indices_kf in kf.split(K,labels):
+    #     #      labels_current = labels[train_indices_kf]
+    #     #         #print(train_indices_kf,test_indices_kf)   
+    #     #         K_train = K[np.ix_(train_indices_kf, train_indices_kf)]
+    #     #         labels_train = labels[train_indices_kf]
 
-        #         K_test = K[np.ix_(test_indices_kf, train_indices_kf)]
-        #         labels_test = labels[test_indices_kf]
+    #     #         K_test = K[np.ix_(test_indices_kf, train_indices_kf)]
+    #     #         labels_test = labels[test_indices_kf]
 
-        K_train = K.fit_transform()
-        K_test = K.fit_transform(K)
+    #     K_train = K.fit_transform()
+    #     K_test = K.fit_transform(K)
 
-            # Train an SVM classifier and make predictions
-        clf = SVC(kernel='precomputed')
-            # clf.fit(K_train, labels_train) 
-        clf.fit(K_train)
-        y_pred = clf.predict(K_test)
+    #         # Train an SVM classifier and make predictions
+    #     clf = SVC(kernel='precomputed')
+    #         # clf.fit(K_train, labels_train) 
+    #     clf.fit(K_train)
+    #     y_pred = clf.predict(K_test)
 
-     # Evaluate the predictions
-        print("Accuracy:", accuracy_score(y_pred, y_test))
+    #  # Evaluate the predictions
+    #     print("Accuracy:", accuracy_score(y_pred, y_test))
 
 

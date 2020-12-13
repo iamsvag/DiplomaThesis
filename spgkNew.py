@@ -9,10 +9,13 @@ import sys
 import numpy as np
 import networkx as nx
 from tqdm import tqdm
-from utilsNew import load_file, preprocessing, get_vocab, learn_model_and_predict
+from utils import load_file, preprocessing, get_vocab, learn_model_and_predict
 from sklearn.svm import SVC
-from grakel.utils2 import graph_from_networkx
+#from utils2 import graph_from_networkx
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+from grakel.datasets import fetch_dataset
+from grakel.kernels import ShortestPath
 
 def create_graphs_of_words(docs, window_size):
     """ 
@@ -138,24 +141,32 @@ def main():
 
         vocab = get_vocab(docs)
         print("Vocabulary size: ", len(vocab))
-        G_train_nx = create_graphs_of_words(docs,window_size) 
-        G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='label'))
-        G_test_nx = create_graphs_of_words(docs,window_size)
-        G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
+        
 
+    #     G_train_nx = create_graphs_of_words(docs,window_size) 
+    #    G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='label'))
+    #     G_test_nx = create_graphs_of_words(docs,window_size)
+    #     G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
+        
         graphs = create_graphs_of_words(docs, window_size)
         K = build_kernel_matrix(graphs, depth)
+        
 
-        K_train = K.fit_transform(G_train)
-        K_test = K.transform(G_test)
-        # Train an SVM classifier and make predictions
-        clf = SVC(kernel='precomputed')
-        clf.fit(K_train, docs_pos) 
+        # Splits the dataset into a training and a test set
+        G_train, G_test, y_train, y_test = train_test_split(K, labels, test_size=0.1, random_state=42)
+
+        # Uses the shortest path kernel to generate the kernel matrices
+        gk = ShortestPath(normalize=True)
+        K_train = gk.fit_transform(G_train)
+        K_test = gk.transform(G_test)
+
+        # Uses the SVM classifier to perform classification
+        clf = SVC(kernel="precomputed")
+        clf.fit(K_train, y_train)
         y_pred = clf.predict(K_test)
 
-        # Evaluate the predictions
-        print("Accuracy:", accuracy_score(y_pred, docs_neg))
-       # learn_and_predict(K, labels,)
-
+        # Computes and prints the classification accuracy
+        acc = accuracy_score(y_test, y_pred)
+        print("Accuracy:", str(round(acc*100, 2)) + "%")
 if __name__ == "__main__":
     main()

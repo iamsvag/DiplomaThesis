@@ -1,45 +1,11 @@
-
-Skip to content
-Pull requests
-Issues
-Marketplace
-Explore
-@iamsvag
-ysig /
-GraKeL
-
-11
-288
-
-    60
-
-Code
-Issues 4
-Pull requests
-Actions
-Projects
-Wiki
-Security
-
-    Insights
-
-GraKeL/grakel/utils.py /
-@xtomasch
-xtomasch -changed import of Bunch
-Latest commit 92274f7 on Sep 26
-History
-2 contributors
-@ysig
-@xtomasch
-676 lines (565 sloc) 24.1 KB
-"""A file containing useful external functions"""
 # Author: Ioannis Siglidis <y.siglidis@gmail.com>
 # License: BSD 3 clause
 import os
 import numpy as np
 
 from collections import defaultdict
-from collections import Iterable
+#from iterable_collections import Iterable
+from collections.abc import Iterable
 
 from sklearn.base import TransformerMixin
 from sklearn.pipeline import make_pipeline

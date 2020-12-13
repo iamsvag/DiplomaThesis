@@ -1,6 +1,6 @@
 import json
 import csv 
-with open("issues_500.json", "r") as infile: 
+with open("testjson.json", "r") as infile: 
        json_object = json.load(infile) 
 employee_data = json_object['issues'] 
 data_file = open('csv500.csv', 'w') 
