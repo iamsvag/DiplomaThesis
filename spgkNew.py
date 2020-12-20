@@ -14,7 +14,7 @@ from sklearn.svm import SVC
 #from utils2 import graph_from_networkx
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-from grakel.datasets import fetch_dataset
+#from grakel.datasets import fetch_dataset
 from grakel.kernels import ShortestPath
 
 def create_graphs_of_words(docs, window_size):
@@ -152,21 +152,36 @@ def main():
         K = build_kernel_matrix(graphs, depth)
         
 
-        # Splits the dataset into a training and a test set
-        G_train, G_test, y_train, y_test = train_test_split(K, labels, test_size=0.1, random_state=42)
+        # # Splits the dataset into a training and a test set
+        # G_train, G_test, y_train, y_test = train_test_split(K, labels, test_size=0.1, random_state=42)
 
-        # Uses the shortest path kernel to generate the kernel matrices
-        gk = ShortestPath(normalize=True)
-        K_train = gk.fit_transform(G_train)
-        K_test = gk.transform(G_test)
+        # # Uses the shortest path kernel to generate the kernel matrices
+        # gk = ShortestPath(normalize=True)
+        # print(gk)
+
+        # K_train = gk.fit_transform(G_train)
+        # print(K_train)
+        # K_test = gk.transform(G_test)
 
         # Uses the SVM classifier to perform classification
-        clf = SVC(kernel="precomputed")
-        clf.fit(K_train, y_train)
-        y_pred = clf.predict(K_test)
+        # clf = SVC(kernel="precomputed")
+        # clf.fit(K_train, y_train)
+        # y_pred = clf.predict(K_test)
 
+
+        K_train = K
+
+        labels_train = labels
+
+        K_test = K
+        labels_test = labels
+
+        clf = SVC(kernel='precomputed')
+        clf.fit(K_train, labels_train) 
+        labels_predicted = clf.predict(K_test)
+        acc = accuracy_score(labels_test, labels_predicted)
         # Computes and prints the classification accuracy
-        acc = accuracy_score(y_test, y_pred)
+        #acc = accuracy_score(y_test, y_pred)
         print("Accuracy:", str(round(acc*100, 2)) + "%")
 if __name__ == "__main__":
     main()
