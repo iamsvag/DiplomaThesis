@@ -16,6 +16,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 #from grakel.datasets import fetch_dataset
 from grakel.kernels import ShortestPath
+from grakel.kernels import WeisfeilerLehman, VertexHistogram
 
 def create_graphs_of_words(docs, window_size):
     """ 
@@ -149,7 +150,12 @@ def main():
     #     G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
         
         graphs = create_graphs_of_words(docs, window_size)
-        K = build_kernel_matrix(graphs, depth)
+        # Splits the dataset into a training and a test set
+        G_train, G_test, y_train, y_test = train_test_split(graphs, labels, test_size=0.1, random_state=42)
+        gk = WeisfeilerLehman(n_iter=4, base_graph_kernel=VertexHistogram, normalize=True)
+        K_train = gk.fit_transform(G_train)
+        K_test = gk.transform(G_test)
+       # K = build_kernel_matrix(graphs, depth)
         
 
         # # Splits the dataset into a training and a test set
@@ -169,19 +175,13 @@ def main():
         # y_pred = clf.predict(K_test)
 
 
-        K_train = K
+       # Uses the SVM classifier to perform classification
+        clf = SVC(kernel="precomputed")
+        clf.fit(K_train, y_train)
+        y_pred = clf.predict(K_test)
 
-        labels_train = labels
-
-        K_test = K
-        labels_test = labels
-
-        clf = SVC(kernel='precomputed')
-        clf.fit(K_train, labels_train) 
-        labels_predicted = clf.predict(K_test)
-        acc = accuracy_score(labels_test, labels_predicted)
         # Computes and prints the classification accuracy
-        #acc = accuracy_score(y_test, y_pred)
+        acc = accuracy_score(y_test, y_pred)
         print("Accuracy:", str(round(acc*100, 2)) + "%")
-if __name__ == "__main__":
+    if __name__ == "__main__":
         main()
