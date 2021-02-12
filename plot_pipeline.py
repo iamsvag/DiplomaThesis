@@ -8,7 +8,6 @@ Created on Fri Apr 14 2017
 import sys
 import numpy as np
 import networkx as nx
-from grakel.utils import graph_from_networkx
 from tqdm import tqdm
 from utils import load_file, preprocessing, get_vocab, learn_model_and_predict
 from sklearn.svm import SVC
@@ -17,8 +16,10 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 #from grakel.datasets import fetch_dataset
 from grakel.kernels import ShortestPath
-from grakel.kernels import WeisfeilerLehman, VertexHistogram
-from grakel.datasets import fetch_dataset
+from sklearn.model_selection import cross_val_predict
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import cross_val_score
 
 def create_graphs_of_words(docs, window_size):
     """ 
@@ -108,9 +109,6 @@ def build_kernel_matrix(graphs, depth):
     return K
 
 
-    
-
-
 def main():
     """ 
     Main function
@@ -147,7 +145,7 @@ def main():
 
         vocab = get_vocab(docs)
         print("Vocabulary size: ", len(vocab))
-        print(docs)
+        
 
     #     G_train_nx = create_graphs_of_words(docs,window_size) 
     #    G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='label'))
@@ -155,33 +153,57 @@ def main():
     #     G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
         
         graphs = create_graphs_of_words(docs, window_size)
+        K = build_kernel_matrix(graphs, depth)
         
+
+        # # Splits the dataset into a training and a test set
+        # G_train, G_test, y_train, y_test = train_test_split(K, labels, test_size=0.1, random_state=42)
+
+        # # Uses the shortest path kernel to generate the kernel matrices
+        # gk = ShortestPath(normalize=True)
+        # print(gk)
+
+        # K_train = gk.fit_transform(G_train)
+        # print(K_train)
+        # K_test = gk.transform(G_test)
+
+        # Uses the SVM classifier to perform classification
+        # clf = SVC(kernel="precomputed")
+        # clf.fit(K_train, y_train)
+        # y_pred = clf.predict(K_test)
+
+
+        # K_train = K
+
+        # labels_train = labels
+
+        # K_test = K
+        # labels_test = labels
+
+        # clf = SVC(kernel='precomputed')
+        # clf.fit(K_train, labels_train) 
+        # labels_predicted = clf.predict(K_test)
+        # acc = accuracy_score(labels_test, labels_predicted)
+        # Computes and prints the classification accuracy
+        #acc = accuracy_score(y_test, y_pred)
+        # print("Accuracy:", str(round(acc*100, 2)) + "%")
         
-    #     MUTAG = fetch_dataset(docs,verbose=False)
-    #     G, y = MUTAG.data, MUTAG.target
-
-    #     #G_train, G_test, y_train, y_test = train_test_split(graphs, labels, test_size=0.1, random_state=42)
-    #     G_train, G_test, y_train, y_test = train_test_split(G, y, test_size=0.1, random_state=42)
-    #     gk = WeisfeilerLehman(n_iter=1, base_graph_kernel=VertexHistogram, normalize=False)
-    #     # Construct kernel matrices
-    #     K_train = gk.fit_transform(G_train)
-    #     K_test = gk.transform(G_test)
-
-
-    #     #G_train, G_test, y_train, y_test = train_test_split(G, y, test_size=0.1, random_state=42)
-
-
-
-     
-    #     print("------------")
-
-    #    # Uses the SVM classifier to perform classification
-    #     clf = SVC(kernel="precomputed")
-    #     clf.fit(K_train, y_train)
-    #     y_pred = clf.predict(K_test)
-
-    #     # Computes and prints the classification accuracy
-    #     acc = accuracy_score(y_test, y_pred)
-    #     print("Accuracy:", str(round(acc*100, 2)) + "%")
-    if __name__ == "__main__":
+        # Values of C parameter of SVM
+        C_grid = (10. ** np.arange(-4,6,1) / len(K)).tolist()
+        #print(C_grid)
+        print("test1\n")
+        # Creates pipeline
+        estimator = make_pipeline(
+            ShortestPath(normalize=True),
+            GridSearchCV(SVC(kernel='precomputed'), dict(C=C_grid),scoring='accuracy', cv=10))
+        print("test2\n")                
+        # Performs cross-validation and computes accuracy
+        K_train = K
+        n_folds = 10
+        acc = accuracy_score(labels,K_train) #cross_val_predict(estimator, K_train, labels, cv=n_folds))
+        #acc = accuracy_score(labels,predict)
+        # acc = cross_val_score(estimator, K, labels, cv=n_folds)
+        print("test3\n")
+        print("Accuracy:", str(round(acc*100, 2)) + "%")             
+if __name__ == "__main__":
         main()

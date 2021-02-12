@@ -149,6 +149,7 @@ def main():
     #     G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
         
         graphs = create_graphs_of_words(docs, window_size)
+        print(graphs)
         K = build_kernel_matrix(graphs, depth)
         
 
