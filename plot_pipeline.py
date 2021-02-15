@@ -187,23 +187,30 @@ def main():
         # Computes and prints the classification accuracy
         #acc = accuracy_score(y_test, y_pred)
         # print("Accuracy:", str(round(acc*100, 2)) + "%")
-        
+        labels_train = labels
         # Values of C parameter of SVM
         C_grid = (10. ** np.arange(-4,6,1) / len(K)).tolist()
         #print(C_grid)
         print("test1\n")
         # Creates pipeline
-        estimator = make_pipeline(
-            ShortestPath(normalize=True),
-            GridSearchCV(SVC(kernel='precomputed'), dict(C=C_grid),scoring='accuracy', cv=10))
+        estimator = make_pipeline(ShortestPath(normalize=True),GridSearchCV(SVC(kernel='precomputed'), dict(C=C_grid),scoring='accuracy', cv=10))
+        print(estimator)
         print("test2\n")                
         # Performs cross-validation and computes accuracy
         K_train = K
         n_folds = 10
-        acc = accuracy_score(labels,K_train) #cross_val_predict(estimator, K_train, labels, cv=n_folds))
+        clf = SVC(kernel='precomputed')
+        print("test3\n")
+        y_pred = cross_val_predict(estimator,K_train, labels_train, cv=n_folds)
+        print(y_pred)
+        print("test4\n")
+        acc = accuracy_score(labels_train, y_pred)
+        print("test5\n")
+        print("Accuracy:", str(round(acc*100, 2)) + "%")
+        #acc = accuracy_score(labels,K_train) #cross_val_predict(estimator, K_train, labels, cv=n_folds))
         #acc = accuracy_score(labels,predict)
         # acc = cross_val_score(estimator, K, labels, cv=n_folds)
         print("test3\n")
-        print("Accuracy:", str(round(acc*100, 2)) + "%")             
+        #print("Accuracy:", str(round(acc*100, 2)) + "%")             
 if __name__ == "__main__":
         main()

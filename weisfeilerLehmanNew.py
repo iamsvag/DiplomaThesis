@@ -111,7 +111,23 @@ def build_kernel_matrix(graphs, depth):
     return K
 
   
+  
+    # def add_edge(self, src, dest): 
+    #        """ 
+    # # Function to add an edge in an undirected graph 
 
+    # """
+    #     # Adding the node to the source node 
+    #     node = AdjNode(dest)
+    #     node.next = self.graph[src] 
+    #     self.graph[src] = node 
+  
+    #     # Adding the source node to the destination as 
+    #     # it is the undirected graph 
+    #     node = AdjNode(src) 
+    #     node.next = self.graph[dest] 
+    #     self.graph[dest] = node 
+  
 
 
 
@@ -152,13 +168,29 @@ def main():
         vocab = get_vocab(docs)
         print("Vocabulary size: ", len(vocab))
         
+        dim = int(np.sqrt(docs.shape[1]*2)+1)
+        graphs = []
+        for t, v in enumerate(docs):
+            # Compute adjacency matrix
+            mat = np.zeros((dim, dim))
+            cont = 0
+            for i in range(dim-1):
+                for j in range(i+1, dim):
+                    mat[i, j] = v[cont]
+                    mat[j, i] = v[cont]
+                    cont += 1
+
+            # Applying the threshold and keeping binary edges
+            adj_mat = np.where(mat > th, 1.0, 0)
+            g = nx.from_numpy_matrix(adj_mat)
+            graphs.append(g)
 
     #     G_train_nx = create_graphs_of_words(docs,window_size) 
     #    G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='label'))
     #     G_test_nx = create_graphs_of_words(docs,window_size)
     #     G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
         
-        graphs = create_graphs_of_words(docs, window_size)
+        #graphs = create_graphs_of_words(docs, window_size)
         #print(graphs)
   
         
@@ -168,9 +200,10 @@ def main():
         #K = gk_wl.compare_list(graphs,1, node_label=True)
         #print(self.graphs)
         graph_list = graphs
-        h=1
+        h=0
         
         n = len(graph_list)
+        #n = len(graphs)
         lists = [0] * n
         k = [0] * (h + 1)
         n_nodes = 0
@@ -182,7 +215,10 @@ def main():
         # nodes in the dataset.
         for i in range(n):
             
-            #lists[i] = graph_list[i].adjacency_list()
+            #lists[i] = graphs.adjacency_list()
+            lists[i] = graph_list[i].adjacency_list()
+            #lists[i] = add_edge()
+
             n_nodes = n_nodes + graph_list[i].number_of_nodes()
 
             # Computing the maximum number of nodes in the graphs. It
