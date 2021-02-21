@@ -331,4 +331,5 @@ def main():
         #acc = accuracy_score(y_test, y_pred)
         print("Accuracy:", str(round(acc*100, 2)) + "%")
 if __name__ == "__main__":
-        main()
+    print("test")
+    main()

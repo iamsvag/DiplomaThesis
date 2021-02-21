@@ -1,9 +1,9 @@
 import json
 import csv 
-with open("testjson.json", "r") as infile: 
+with open("testjson1.json", "r") as infile: 
        json_object = json.load(infile) 
 employee_data = json_object['issues'] 
-data_file = open('csv500.csv', 'w') 
+data_file = open('csvFew.csv', 'w') 
 csv_writer = csv.writer(data_file) 
 count= 0
 for emp in employee_data: 

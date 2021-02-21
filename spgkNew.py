@@ -151,7 +151,7 @@ def main():
         graphs = create_graphs_of_words(docs, window_size)
         print(graphs)
         K = build_kernel_matrix(graphs, depth)
-        
+        print(K)
 
         # # Splits the dataset into a training and a test set
         # G_train, G_test, y_train, y_test = train_test_split(K, labels, test_size=0.1, random_state=42)
