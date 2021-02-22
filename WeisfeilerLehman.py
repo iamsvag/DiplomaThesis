@@ -163,14 +163,16 @@ def main():
         graphs = create_graphs_of_words(docs, window_size)
         # K = build_kernel_matrix(graphs, depth)
         # Loads the MUTAG dataset
+        print(docs)
         MUTAG = fetch_dataset("MUTAG", verbose=False)
+        #print(MUTAG)
         G, y = MUTAG.data, MUTAG.target
         
-        print(G)
-        print(G_train)
-        print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-        print(y)
-        print(labels)
+        # print(G)
+        # print(G_train)
+        # print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+        # print(y)
+        # print(labels)
         # Splits the dataset into a training and a test set
         G_train, G_test, y_train, y_test = train_test_split(G, y, test_size=0.1, random_state=42)
 
@@ -187,77 +189,6 @@ def main():
         # Computes and prints the classification accuracy
         acc = accuracy_score(y_test, y_pred)
         print("Accuracy:", str(round(acc*100, 2)) + "%")
-
- #----------------------------------------------------------------------------------------------------------------------------------------------------------------
-        # MUTAG = fetch_dataset("MUTAG", verbose=False)
-        # G, y = MUTAG.data, MUTAG.target
-        # print(G,y)
-        # G_train, G_test, y_train, y_test = train_test_split(G, y, test_size=0.1, random_state=42)
-        # # Create graph-of-words representations
-        # G_train_nx = create_graphs_of_words(docs,window_size) 
-        # G_test_nx = create_graphs_of_words(docs,window_size)
-        # #print(G_train_nx)
-
-        # print("Example of graph-of-words representation of document")
-        # nx.draw_networkx(G_train_nx[window_size], with_labels=True)
-        # # Transform networkx graphs to grakel representations
-        # G_train = list(graph_from_networkx(G_train_nx))#, node_labels_tag='label'))
-        # #print(G_train)
-        # G_test = list(graph_from_networkx(G_test_nx))#, node_labels_tag='label'))
-        # #print(G_train)
-        # # G_train = build_kernel_matrix(G_train_nx,depth)
-        # # print(G_train)
-        # # print(G_train[1,1])
-        # # G_test = build_kernel_matrix(G_test_nx,depth)
-        # # Initialize a Weisfeiler-Lehman subtree kernel
-        # gk = WeisfeilerLehman(n_iter=1,base_graph_kernel=VertexHistogram, normalize=False)
-        # # Construct kernel matrices
-        # K_train = gk.fit_transform(G_train)
-        # K_test = gk.transform(G_test)
-
-        # # Train an SVM classifier and make predictions
-        # clf = SVC(kernel='precomputed')
-        # clf.fit(K_train, y_train) 
-        # y_pred = clf.predict(K_test)
-
-        # # Evaluate the predictions
-        # print("Accuracy:", accuracy_score(y_pred, y_test))
-
-
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------  
-        # clf = SVC(kernel='precomputed')
-        # clf.fit(G_train,labels) 
-        # labels_predicted = clf.predict(G_test)
-        # acc = accuracy_score(labels, labels_predicted)
-        # # Computes and prints the classification accuracy
-        # #acc = accuracy_score(y_test, y_pred)
-        # print("Accuracy:", str(round(acc*100, 2)) + "%")
-    # #     MUTAG = fetch_dataset(docs,verbose=False)s
-    # #     G, y = MUTAG.data, MUTAG.target
-    #     G_train, G_test, y_train, y_test = train_test_split(docs, labels, test_size=0.1, random_state=42)
-    #     print(G_train)
-    #     print("-----------\n")
-    #     #print(G_test)
-    #     print("-----------\n")
-    #     print(y_train)
-    #     print("-----------\n")
-    #     print(y_test)
-      
-
-    #     # Uses the Weisfeiler-Lehman subtree kernel to generate the kernel matrices
-    #     gk = WeisfeilerLehman(n_iter=5, base_graph_kernel=VertexHistogram, normalize=True)
-    #     print(gk,"check")
-    #     K_train = gk.fit_transform(G_train)
-    #     K_test = gk.transform(G_test)
-
-    #     # Uses the SVM classifier to perform classification
-    #     clf = SVC(kernel="precomputed")
-    #     clf.fit(K_train, y_train)
-    #     y_pred = clf.predict(K_test)
-
-    #     # Computes and prints the classification accuracy
-    #     acc = accuracy_score(y_test, y_pred)
-    #     print("Accuracy:", str(round(acc*100, 2)) + "%")
 
 if __name__ == "__main__":
     print("test")
