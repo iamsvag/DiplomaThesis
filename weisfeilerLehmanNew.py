@@ -83,7 +83,7 @@ def create_graphs_of_words1(docs, vocab, window_size):
         for i in range(len(doc)):
             if doc[i] not in G.nodes():
                 G.add_node(doc[i])
-                #G.nodes[doc[i]]['label'] = vocab[doc[i]]
+                G.nodes[doc[i]]['foo'] = vocab[doc[i]]
         for i in range(len(doc)):
             for j in range(i+1, i+window_size):
                 if j < len(doc):
@@ -180,8 +180,8 @@ def main():
         # print("Example of graph-of-words representation of document")
         # nx.draw_networkx(G_train_nx[3], with_labels=True)
         #G_train_nx = create_graphs_of_words(docs,window_size) 
-        G_train = list(graph_from_networkx(G_train_nx))#, node_labels_tag='label'))
-        G_test = list(graph_from_networkx(G_test_nx))#, node_labels_tag='label'))
+        G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='foo'))
+        G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='foo'))
     #     G_test_nx = create_graphs_of_words(docs,window_size)
     #     G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
         
