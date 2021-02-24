@@ -5,23 +5,25 @@ Created on Fri Apr 14 2017
 
 """
 
-import copy
 import sys
-
-import networkx as nx
 import numpy as np
-from grakel import GraphKernel
-#from grakel.datasets import fetch_dataset
-from grakel.kernels import ShortestPath
+import networkx as nx
+import matplotlib.pyplot as plt
+from grakel.utils import graph_from_networkx
+from tqdm import tqdm
+from utils import load_file, preprocessing, get_vocab, learn_model_and_predict, get_vocab1
+#from utilsNew import get_vocab1
+from sklearn.svm import SVC
 #from utils2 import graph_from_networkx
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-from sklearn.svm import SVC
-from tqdm import tqdm
-from GK_WL import GK_WL
-
-from utils import get_vocab, learn_model_and_predict, load_file, preprocessing
-
+from grakel.kernels import Kernel
+#from grakel.datasets import fetch_dataset
+from grakel.kernels import ShortestPath
+from grakel.kernels import WeisfeilerLehman, VertexHistogram
+#from grakel.kernels.vertex_histogram import VertexHistogram
+from grakel.datasets import fetch_dataset
+#from GK_WL import GK_WL
 
 def create_graphs_of_words(docs, window_size):
     """ 
@@ -68,11 +70,28 @@ def spgk(sp_g1, sp_g2, norm1, norm2):
                         kernel_value += (1.0/sp_g1[node1][node2]) * (1.0/sp_g2[node1][node2])
 
         kernel_value /= (norm1 * norm2)
-        #print(kernel_value)
         
         return kernel_value
 
+def create_graphs_of_words1(docs, vocab, window_size):
+    graphs = list()
+    sizes = list()
+    degs = list()
 
+    for idx,doc in enumerate(docs):
+        G = nx.Graph()
+        for i in range(len(doc)):
+            if doc[i] not in G.nodes():
+                G.add_node(doc[i])
+                #G.nodes[doc[i]]['label'] = vocab[doc[i]]
+        for i in range(len(doc)):
+            for j in range(i+1, i+window_size):
+                if j < len(doc):
+                    G.add_edge(doc[i], doc[j])
+        
+        graphs.append(G)
+    
+    return graphs
 def build_kernel_matrix(graphs, depth):
     """ 
     Build kernel matrices
@@ -102,33 +121,19 @@ def build_kernel_matrix(graphs, depth):
 
     K = np.zeros((N, N))
 
-    print("\nKernel computation progress:")
-    for i in tqdm(range(N)):
-        for j in range(i, N):
-            K[i,j] = spgk(sp[i], sp[j], norm[i], norm[j])
-            K[j,i] = K[i,j]
 
-    return K
+    # print("\nKernel computation progress:")
+    # for i in tqdm(range(N)):
+    #     for j in range(i, N):
+    #         # K[i,j] = spgk(sp[i], sp[j], norm[i], norm[j])
+    #         # K[j,i] = K[i,j]
+    #         gk = WeisfeilerLehman(n_iter=1,base_graph_kernel=VertexHistogram, normalize=False)
+    #         # Construct kernel matrices
+    #         K[i,j] = gk.fit_transform(sp_g[i,j])
+    #     return K
 
-  
-  
-    # def add_edge(self, src, dest): 
-    #        """ 
-    # # Function to add an edge in an undirected graph 
 
-    # """
-    #     # Adding the node to the source node 
-    #     node = AdjNode(dest)
-    #     node.next = self.graph[src] 
-    #     self.graph[src] = node 
-  
-    #     # Adding the source node to the destination as 
-    #     # it is the undirected graph 
-    #     node = AdjNode(src) 
-    #     node.next = self.graph[dest] 
-    #     self.graph[dest] = node 
-  
-
+    
 
 
 def main():
@@ -164,172 +169,73 @@ def main():
         labels = labels_pos
         labels.extend(labels_neg)
         labels = np.array(labels)
-
-        vocab = get_vocab(docs)
+        train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.1, random_state=42)
+        vocab = get_vocab1(train_data,test_data)
         print("Vocabulary size: ", len(vocab))
         
-        dim = int(np.sqrt(docs.shape[1]*2)+1)
-        graphs = []
-        for t, v in enumerate(docs):
-            # Compute adjacency matrix
-            mat = np.zeros((dim, dim))
-            cont = 0
-            for i in range(dim-1):
-                for j in range(i+1, dim):
-                    mat[i, j] = v[cont]
-                    mat[j, i] = v[cont]
-                    cont += 1
-
-            # Applying the threshold and keeping binary edges
-            adj_mat = np.where(mat > th, 1.0, 0)
-            g = nx.from_numpy_matrix(adj_mat)
-            graphs.append(g)
-
-    #     G_train_nx = create_graphs_of_words(docs,window_size) 
-    #    G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='label'))
+        #print(labels)
+        # Create graph-of-words representations
+        G_train_nx = create_graphs_of_words1(train_data, vocab, window_size) 
+        G_test_nx = create_graphs_of_words1(test_data, vocab, window_size)
+        # print("Example of graph-of-words representation of document")
+        # nx.draw_networkx(G_train_nx[3], with_labels=True)
+        #G_train_nx = create_graphs_of_words(docs,window_size) 
+        G_train = list(graph_from_networkx(G_train_nx))#, node_labels_tag='label'))
+        G_test = list(graph_from_networkx(G_test_nx))#, node_labels_tag='label'))
     #     G_test_nx = create_graphs_of_words(docs,window_size)
     #     G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
         
         #graphs = create_graphs_of_words(docs, window_size)
-        #print(graphs)
-  
-        
+        # K = build_kernel_matrix(graphs, depth)
+        # Loads the MUTAG dataset
+        #print(docs)
+        # Initialize a Weisfeiler-Lehman subtree kernel
+        gk = WeisfeilerLehman(n_iter=1, normalize=False, base_graph_kernel=VertexHistogram)
 
-        #gk_wl = GK_WL()
-        #print(graphs)
-        #K = gk_wl.compare_list(graphs,1, node_label=True)
-        #print(self.graphs)
-        graph_list = graphs
-        h=0
-        
-        n = len(graph_list)
-        #n = len(graphs)
-        lists = [0] * n
-        k = [0] * (h + 1)
-        n_nodes = 0
-        n_max = 0
-        node_label=True
+        # Construct kernel matrices
+        K_train = gk.fit_transform(G_train)
+        K_test = gk.transform(G_test)
 
-
-        # Compute adjacency lists and n_nodes, the total number of
-        # nodes in the dataset.
-        for i in range(n):
-            
-            #lists[i] = graphs.adjacency_list()
-            lists[i] = graph_list[i].adjacency_list()
-            #lists[i] = add_edge()
-
-            n_nodes = n_nodes + graph_list[i].number_of_nodes()
-
-            # Computing the maximum number of nodes in the graphs. It
-            # will be used in the computation of vectorial
-            # representation.
-            if(n_max < graph_list[i].number_of_nodes()):
-                n_max = graph_list[i].number_of_nodes()
-
-        phi = np.zeros((n_max, n), dtype=np.uint64)
-
-        # INITIALIZATION: initialize the nodes labels for each graph
-        # with their labels or with degrees (for unlabeled graphs)
-
-        labels = [0] * n
-        label_lookup = {}
-        label_counter = 0
-
-        # label_lookup is an associative array, which will contain the
-        # mapping from multiset labels (strings) to short labels
-        # (integers)
-
-        if node_label is True:
-            for i in range(n):
-                l_aux = nx.get_node_attributes(graph_list[i],
-                                               'node_label').values()
-                # It is assumed that the graph has an attribute
-                # 'node_label'
-                labels[i] = np.zeros(len(l_aux), dtype=np.int32)
-
-                for j in range(len(l_aux)):
-                    if not (l_aux[j] in label_lookup):
-                        label_lookup[l_aux[j]] = label_counter
-                        labels[i][j] = label_counter
-                        label_counter += 1
-                    else:
-                        labels[i][j] = label_lookup[l_aux[j]]
-                    # labels are associated to a natural number
-                    # starting with 0.
-                    phi[labels[i][j], i] += 1
-        else:
-            for i in range(n):
-                labels[i] = np.array(graph_list[i].degree().values())
-                for j in range(len(labels[i])):
-                    phi[labels[i][j], i] += 1
-
-        # Simplified vectorial representation of graphs (just taking
-        # the vectors before the kernel iterations), i.e., it is just
-        # the original nodes degree.
-        #self.vectors = 
-        #vectors = np.copy(phi.transpose())
-
-        k = np.dot(phi.transpose(), phi)
-        print(k)
-        # MAIN LOOP
-        it = 0
-        new_labels = copy.deepcopy(labels)
-
-        while it < h:
-            # create an empty lookup table
-            label_lookup = {}
-            label_counter = 0
-
-            phi = np.zeros((n_nodes, n), dtype=np.uint64)
-            for i in range(n):
-                for v in range(len(lists[i])):
-                    # form a multiset label of the node v of the i'th graph
-                    # and convert it to a string
-
-                    long_label = np.concatenate((np.array([labels[i][v]]),
-                                                 np.sort(labels[i]
-                                                 [lists[i][v]])))
-                    long_label_string = str(long_label)
-                    # if the multiset label has not yet occurred, add it to the
-                    # lookup table and assign a number to it
-                    if not (long_label_string in label_lookup):
-                        label_lookup[long_label_string] = label_counter
-                        new_labels[i][v] = label_counter
-                        label_counter += 1
-                    else:
-                        new_labels[i][v] = label_lookup[long_label_string]
-                # fill the column for i'th graph in phi
-                aux = np.bincount(new_labels[i])
-                phi[new_labels[i], i] += aux[new_labels[i]]
-
-            k += np.dot(phi.transpose(), phi)
-            labels = copy.deepcopy(new_labels)
-            it = it + 1
-
-        # Compute the normalized version of the kernel
-        k_norm = np.zeros(k.shape)
-        print(k_norm)
-        for i in range(k.shape[0]):
-            for j in range(k.shape[1]):
-                k_norm[i, j] = k[i, j] / np.sqrt(k[i, i] * k[j, j])
-
-  
-   
-        K_train = k_norm
-
-        labels_train = labels
-
-        K_test = k_norm
-        labels_test = labels
-        
+        # Train an SVM classifier and make predictions
         clf = SVC(kernel='precomputed')
-        clf.fit(K_train, labels_train) 
-        labels_predicted = clf.predict(K_test)
-        acc = accuracy_score(labels_test, labels_predicted)
-        # Computes and prints the classification accuracy
-        #acc = accuracy_score(y_test, y_pred)
-        print("Accuracy:", str(round(acc*100, 2)) + "%")
+        clf.fit(K_train, y_train) 
+        y_pred = clf.predict(K_test)
+
+        # Evaluate the predictions
+        print("Accuracy:", accuracy_score(y_pred, y_test))
+
+        # #print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+        # #working part
+        # MUTAG = fetch_dataset("MUTAG", verbose=False)
+        # print(MUTAG)
+        # G, y = MUTAG.data, MUTAG.target
+        # G_train, G_test, y_train, y_test = train_test_split(G, y, test_size=0.1, random_state=42)
+
+        # # Uses the Weisfeiler-Lehman subtree kernel to generate the kernel matrices
+        # gk = WeisfeilerLehman(n_iter=4, base_graph_kernel=VertexHistogram, normalize=True)
+        # K_train = gk.fit_transform(G_train)
+        # K_test = gk.transform(G_test)
+
+        # # Uses the SVM classifier to perform classification
+        # clf = SVC(kernel="precomputed")
+        # clf.fit(K_train, y_train)
+        # y_pred = clf.predict(K_test)
+
+        # # Computes and prints the classification accuracy
+        # acc = accuracy_score(y_test, y_pred)
+        # print("Accuracy:", str(round(acc*100, 2)) + "%")
+        # #print(G) 
+        # # print(G_train)
+        # #print(y)
+        # # print(labels)
+        # # Splits the dataset into a training and a test set
+        # # print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+
+
+
+
+
+
 if __name__ == "__main__":
     print("test")
     main()

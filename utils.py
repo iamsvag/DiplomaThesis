@@ -73,7 +73,21 @@ def get_vocab(docs):
             vocab.add(word)
         
     return vocab
+    
+def get_vocab1(train_docs, test_docs):
+    vocab = dict()
+    
+    for doc in train_docs:
+        for word in doc:
+            if word not in vocab:
+                vocab[word] = len(vocab)
 
+    for doc in test_docs:
+        for word in doc:
+            if word not in vocab:
+                vocab[word] = len(vocab)
+        
+    return vocab
 
 def learn_model_and_predict(K, labels):
     #print(K,labels)
