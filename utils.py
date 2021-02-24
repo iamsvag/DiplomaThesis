@@ -11,6 +11,7 @@ import re
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from sklearn.model_selection import KFold, StratifiedShuffleSplit
+from nltk.stem.porter import PorterStemmer
 
 
 def load_file(filename):
@@ -26,7 +27,17 @@ def load_file(filename):
 
     return docs
 
-
+def load_file1(filename):
+    labels = []
+    docs =[]
+    print(filename)
+    with open(filename, encoding='utf8', errors='ignore') as f:
+        for line in f:
+            content = line.split('\t')
+            labels.append(content[0])
+            docs.append(content[1][:-1])
+    
+    return docs,labels  
 def clean_str(string):
     """
     Tokenization/string cleaning for all datasets.
@@ -73,7 +84,35 @@ def get_vocab(docs):
             vocab.add(word)
         
     return vocab
+
+def clean_str1(string):
+    string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)     
+    string = re.sub(r"\'s", " \'s", string) 
+    string = re.sub(r"\'ve", " \'ve", string) 
+    string = re.sub(r"n\'t", " n\'t", string) 
+    string = re.sub(r"\'re", " \'re", string) 
+    string = re.sub(r"\'d", " \'d", string) 
+    string = re.sub(r"\'ll", " \'ll", string) 
+    string = re.sub(r",", " , ", string) 
+    string = re.sub(r"!", " ! ", string) 
+    string = re.sub(r"\(", " \( ", string) 
+    string = re.sub(r"\)", " \) ", string) 
+    string = re.sub(r"\?", " \? ", string) 
+    string = re.sub(r"\s{2,}", " ", string)
+    return string.strip().lower().split()
+
+
+def preprocessing1(docs): 
+    preprocessed_docs = []
+    n_sentences = 0
+    stemmer = PorterStemmer()
+
+    for doc in docs:
+        clean_doc = clean_str1(doc)
+        preprocessed_docs.append([stemmer.stem(w) for w in clean_doc])
     
+    return preprocessed_docs
+
 def get_vocab1(train_docs, test_docs):
     vocab = dict()
     

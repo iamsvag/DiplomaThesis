@@ -11,7 +11,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from grakel.utils import graph_from_networkx
 from tqdm import tqdm
-from utils import load_file, preprocessing, get_vocab, learn_model_and_predict, get_vocab1
+from utils import load_file, preprocessing, get_vocab, learn_model_and_predict, get_vocab1,load_file1, preprocessing1
 #from utilsNew import get_vocab1
 from sklearn.svm import SVC
 #from utils2 import graph_from_networkx
@@ -150,26 +150,34 @@ def main():
         window_size = int(sys.argv[3])
         depth = int(sys.argv[4])
 
-        docs_pos = load_file(filename_pos)
-       # print(docs_pos)
-        docs_pos = preprocessing(docs_pos)
-       # print(docs_pos)
-        labels_pos = []
-        for i in range(len(docs_pos)):
-            labels_pos.append(1)
+    #     docs_pos = load_file(filename_pos)
+    #    # print(docs_pos)
+    #     docs_pos = preprocessing(docs_pos)
+    #    # print(docs_pos)
+    #     labels_pos = []
+    #     for i in range(len(docs_pos)):
+    #         labels_pos.append(1)
 
-        docs_neg = load_file(filename_neg)
-        docs_neg = preprocessing(docs_neg)
-        labels_neg = []
-        for i in range(len(docs_neg)):
-            labels_neg.append(0)
+    #     docs_neg = load_file(filename_neg)
+    #     docs_neg = preprocessing(docs_neg)
+    #     labels_neg = []
+    #     for i in range(len(docs_neg)):
+    #         labels_neg.append(0)
 
-        docs = docs_pos
-        docs.extend(docs_neg)
-        labels = labels_pos
-        labels.extend(labels_neg)
-        labels = np.array(labels)
-        train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.1, random_state=42)
+    #     docs = docs_pos
+    #     docs.extend(docs_neg)
+    #     labels = labels_pos
+    #     labels.extend(labels_neg)
+    #     labels = np.array(labels)
+        # Read and pre-process train data
+        train_data, y_train = load_file1(filename_pos)
+        train_data = preprocessing1(train_data)
+
+        # Read and pre-process test data
+        test_data, y_test = load_file1(filename_neg)
+        test_data = preprocessing1(test_data)
+
+        #train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.1, random_state=42)
         vocab = get_vocab1(train_data,test_data)
         print("Vocabulary size: ", len(vocab))
         
@@ -182,8 +190,8 @@ def main():
         #G_train_nx = create_graphs_of_words(docs,window_size) 
         G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='foo'))
         G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='foo'))
-    #     G_test_nx = create_graphs_of_words(docs,window_size)
-    #     G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
+    #   G_test_nx = create_graphs_of_words(docs,window_size)
+    #   G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
         
         #graphs = create_graphs_of_words(docs, window_size)
         # K = build_kernel_matrix(graphs, depth)
