@@ -30,11 +30,13 @@ def load_file(filename):
 def load_file1(filename):
     labels = []
     docs =[]
-    print(filename)
     with open(filename, encoding='utf8', errors='ignore') as f:
         for line in f:
+            print(line + "\n")
             content = line.split('\t')
+            print(content + "\n")
             labels.append(content[0])
+            print(labels)
             docs.append(content[1][:-1])
     
     return docs,labels  

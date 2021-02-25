@@ -1,8 +1,6 @@
 """
 Created on Fri Apr 14 2017
-
 @author: g.nikolentzos
-
 """
 
 import sys
@@ -11,7 +9,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from grakel.utils import graph_from_networkx
 from tqdm import tqdm
-from utils import load_file, preprocessing, get_vocab, learn_model_and_predict, get_vocab1,load_file1, preprocessing1
+from utils import load_file, preprocessing, get_vocab, learn_model_and_predict, get_vocab1
 #from utilsNew import get_vocab1
 from sklearn.svm import SVC
 #from utils2 import graph_from_networkx
@@ -28,7 +26,6 @@ from grakel.datasets import fetch_dataset
 def create_graphs_of_words(docs, window_size):
     """ 
     Create graphs of words
-
     """
     graphs = list()
     sizes = list()
@@ -56,7 +53,6 @@ def create_graphs_of_words(docs, window_size):
 def spgk(sp_g1, sp_g2, norm1, norm2):
     """ 
     Compute spgk kernel
-
     """
     if norm1 == 0 or norm2==0:
         return 0
@@ -95,7 +91,6 @@ def create_graphs_of_words1(docs, vocab, window_size):
 def build_kernel_matrix(graphs, depth):
     """ 
     Build kernel matrices
-
     """
     N = len(graphs)
     #print(N)
@@ -139,7 +134,6 @@ def build_kernel_matrix(graphs, depth):
 def main():
     """ 
     Main function
-
     """
     if len(sys.argv) != 5:
         print('Wrong number of arguments!!! Run as follows:')
@@ -150,65 +144,46 @@ def main():
         window_size = int(sys.argv[3])
         depth = int(sys.argv[4])
 
-    #     docs_pos = load_file(filename_pos)
-    #    # print(docs_pos)
-    #     docs_pos = preprocessing(docs_pos)
-    #    # print(docs_pos)
-        #labels_pos = []
-       # for i in range(len(docs_pos)):
-    #         labels_pos.append(1)
+        docs_pos = load_file(filename_pos)
+       # print(docs_pos)
+        docs_pos = preprocessing(docs_pos)
+       # print(docs_pos)
+        labels_pos = []
+        for i in range(len(docs_pos)):
+            labels_pos.append(1)
 
-    #     docs_neg = load_file(filename_neg)
-    #     docs_neg = preprocessing(docs_neg)
-    #     labels_neg = []
-    #     for i in range(len(docs_neg)):
-    #         labels_neg.append(0)
+        docs_neg = load_file(filename_neg)
+        docs_neg = preprocessing(docs_neg)
+        labels_neg = []
+        for i in range(len(docs_neg)):
+            labels_neg.append(0)
 
-    #     docs = docs_pos
-    #     docs.extend(docs_neg)
-    #     labels = labels_pos
-    #     labels.extend(labels_neg)
-    #     labels = np.array(labels)
-        # Read and pre-process train data
-        train_data = load_file(filename_pos)
-        train_data = preprocessing1(train_data)
-        y_train = []
-        for i in range(len(train_data)):
-            y_train.append(1)
-
-        # Read and pre-process test data
-        test_data = load_file(filename_neg)
-        test_data = preprocessing1(test_data)
-        y_test = []
-        for i in range(len(test_data)):
-           y_test.append(-1)
-
-        #train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.1, random_state=42)
+        docs = docs_pos
+        docs.extend(docs_neg)
+        labels = labels_pos
+        labels.extend(labels_neg)
+        labels = np.array(labels)
+        train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.1, random_state=42)
         vocab = get_vocab1(train_data,test_data)
-        print("Vocabulary size: ", len(vocab))
-        
-        #print(labels)
+        print("Vocabulary Size: ", len(vocab))
+        # print(docs[0])
+        # print("------------------------------------------------------\n")
+        # print(docs[1])
         # Create graph-of-words representations
         G_train_nx = create_graphs_of_words1(train_data, vocab, window_size) 
         G_test_nx = create_graphs_of_words1(test_data, vocab, window_size)
         # print("Example of graph-of-words representation of document")
         # nx.draw_networkx(G_train_nx[3], with_labels=True)
         #G_train_nx = create_graphs_of_words(docs,window_size) 
-        G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='foo'))
-        G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='foo'))
-    #   G_test_nx = create_graphs_of_words(docs,window_size)
-    #   G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
-        
-        #graphs = create_graphs_of_words(docs, window_size)
-        # K = build_kernel_matrix(graphs, depth)
-        # Loads the MUTAG dataset
-        #print(docs)
+        G_train = list(graph_from_networkx(G_train_nx, node_labels_tag="foo"))
+        G_test = list(graph_from_networkx(G_test_nx, node_labels_tag="foo"))
+        print(G_train[2])
+
         # Initialize a Weisfeiler-Lehman subtree kernel
         gk = WeisfeilerLehman(n_iter=1, normalize=False, base_graph_kernel=VertexHistogram)
 
         # Construct kernel matrices
         K_train = gk.fit_transform(G_train)
-        print(K_train)
         K_test = gk.transform(G_test)
 
         # Train an SVM classifier and make predictions
@@ -218,35 +193,6 @@ def main():
 
         # Evaluate the predictions
         print("Accuracy:", accuracy_score(y_pred, y_test))
-
-        # #print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-        # #working part
-        # MUTAG = fetch_dataset("MUTAG", verbose=False)
-        # print(MUTAG)
-        # G, y = MUTAG.data, MUTAG.target
-        # G_train, G_test, y_train, y_test = train_test_split(G, y, test_size=0.1, random_state=42)
-
-        # # Uses the Weisfeiler-Lehman subtree kernel to generate the kernel matrices
-        # gk = WeisfeilerLehman(n_iter=4, base_graph_kernel=VertexHistogram, normalize=True)
-        # K_train = gk.fit_transform(G_train)
-        # K_test = gk.transform(G_test)
-
-        # # Uses the SVM classifier to perform classification
-        # clf = SVC(kernel="precomputed")
-        # clf.fit(K_train, y_train)
-        # y_pred = clf.predict(K_test)
-
-        # # Computes and prints the classification accuracy
-        # acc = accuracy_score(y_test, y_pred)
-        # print("Accuracy:", str(round(acc*100, 2)) + "%")
-        # #print(G) 
-        # # print(G_train)
-        # #print(y)
-        # # print(labels)
-        # # Splits the dataset into a training and a test set
-        # # print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-
-
 
 
 
