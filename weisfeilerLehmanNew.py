@@ -150,40 +150,42 @@ def main():
         window_size = int(sys.argv[3])
         depth = int(sys.argv[4])
 
-    #     docs_pos = load_file(filename_pos)
-    #    # print(docs_pos)
-    #     docs_pos = preprocessing(docs_pos)
-    #    # print(docs_pos)
-        #labels_pos = []
-       # for i in range(len(docs_pos)):
-    #         labels_pos.append(1)
+        docs_pos = load_file(filename_pos)
+       # print(docs_pos)
+        docs_pos = preprocessing(docs_pos)
+       # print(docs_pos)
+        labels_pos = []
+        for i in range(len(docs_pos)):
+            labels_pos.append(1)
 
-    #     docs_neg = load_file(filename_neg)
-    #     docs_neg = preprocessing(docs_neg)
-    #     labels_neg = []
-    #     for i in range(len(docs_neg)):
-    #         labels_neg.append(0)
+        docs_neg = load_file(filename_neg)
+        docs_neg = preprocessing(docs_neg)
+        labels_neg = []
+        for i in range(len(docs_neg)):
+            labels_neg.append(0)
 
-    #     docs = docs_pos
-    #     docs.extend(docs_neg)
-    #     labels = labels_pos
-    #     labels.extend(labels_neg)
-    #     labels = np.array(labels)
+        docs = docs_pos
+        docs.extend(docs_neg)
+        labels = labels_pos
+        labels.extend(labels_neg)
+        labels = np.array(labels)
         # Read and pre-process train data
-        train_data = load_file(filename_pos)
-        train_data = preprocessing1(train_data)
-        y_train = []
-        for i in range(len(train_data)):
-            y_train.append(1)
+        # train_data = load_file(filename_pos)
+        # train_data = preprocessing1(train_data)
+        # y_train = []
+        # for i in range(len(train_data)):
+        #     y_train.append(1)
 
-        # Read and pre-process test data
-        test_data = load_file(filename_neg)
-        test_data = preprocessing1(test_data)
-        y_test = []
-        for i in range(len(test_data)):
-           y_test.append(-1)
+        # # Read and pre-process test data
+        # test_data = load_file(filename_neg)
+        # test_data = preprocessing1(test_data)
+        # y_test = []
+        # for i in range(len(test_data)):
+        #    y_test.append(0)
 
-        #train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.1, random_state=42)
+        train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.33, random_state=42)
+        print(y_test)
+        print(y_train)
         vocab = get_vocab1(train_data,test_data)
         print("Vocabulary size: ", len(vocab))
         
@@ -213,11 +215,11 @@ def main():
 
         # Train an SVM classifier and make predictions
         clf = SVC(kernel='precomputed')
-        clf.fit(K_train, y_train) 
+        clf.fit(K_train,y_train) 
         y_pred = clf.predict(K_test)
 
         # Evaluate the predictions
-        print("Accuracy:", accuracy_score(y_pred, y_test))
+        print("Accuracy:", accuracy_score(y_test, y_pred))
 
         # #print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
         # #working part
