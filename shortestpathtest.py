@@ -1,26 +1,32 @@
 """
 Created on Fri Apr 14 2017
-
 @author: g.nikolentzos
-
 """
 
 import sys
 import numpy as np
 import networkx as nx
+import matplotlib.pyplot as plt
+from grakel.utils import graph_from_networkx
 from tqdm import tqdm
-from utils import load_file, preprocessing, get_vocab, learn_model_and_predict
+from utils import load_file, preprocessing, get_vocab, learn_model_and_predict, get_vocab1
+#from utilsNew import get_vocab1
 from sklearn.svm import SVC
 #from utils2 import graph_from_networkx
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
+from grakel.kernels import Kernel
 #from grakel.datasets import fetch_dataset
 from grakel.kernels import ShortestPath
+from grakel.kernels import WeisfeilerLehman, VertexHistogram
+#from grakel.kernels.vertex_histogram import VertexHistogram
+from grakel.datasets import fetch_dataset
+from grakel import Graph
+#from GK_WL import GK_WL
 
 def create_graphs_of_words(docs, window_size):
     """ 
     Create graphs of words
-
     """
     graphs = list()
     sizes = list()
@@ -48,7 +54,6 @@ def create_graphs_of_words(docs, window_size):
 def spgk(sp_g1, sp_g2, norm1, norm2):
     """ 
     Compute spgk kernel
-
     """
     if norm1 == 0 or norm2==0:
         return 0
@@ -62,15 +67,61 @@ def spgk(sp_g1, sp_g2, norm1, norm2):
                         kernel_value += (1.0/sp_g1[node1][node2]) * (1.0/sp_g2[node1][node2])
 
         kernel_value /= (norm1 * norm2)
-        #print(kernel_value)
         
         return kernel_value
+
+def create_graphs_of_words1(docs, vocab, window_size):
+    graphs = list()
+    sizes = list()
+    degs = list()
+    #print(vocab)
+    for idx,doc in enumerate(docs):
+        G = nx.Graph()
+        for i in range(len(doc)):
+            if doc[i] not in G.nodes():
+                G.add_node(doc[i])
+                G.nodes[doc[i]]['foo'] = vocab[doc[i]]
+                
+                
+        for i in range(len(doc)):
+            for j in range(i+1, i+window_size):
+                if j < len(doc):
+                    G.add_edge(doc[i], doc[j])
+        
+        graphs.append(G)
+    
+    return graphs
+
+
+
+def create_author_graph_of_words(docs, voc, window_size):
+    graphs = []
+    for doc in docs:
+        edges = {}
+        unique_words = set()
+        for i in range(len(doc)):
+            unique_words.add(doc[i])
+            for j in range(i+1, i+window_size):
+                if j < len(doc):
+                    unique_words.add(doc[j])
+                    edge_tuple1 = (doc[i], doc[j])
+                    #edge_tuple2 = (doc[j], doc[i])
+                    if edge_tuple1 in edges:
+                        edges[edge_tuple1] += 1
+                    # elif edge_tuple2 in edges:
+                    #     edges[edge_tuple2] += 1
+                    else:
+                        edges[edge_tuple1] = 1
+        node_labels = {word:voc[word] for word in unique_words}
+        g = Graph(edges, node_labels=node_labels)
+        graphs.append(g)
+
+    return graphs
 
 
 def build_kernel_matrix(graphs, depth):
     """ 
     Build kernel matrices
-
     """
     N = len(graphs)
     #print(N)
@@ -96,19 +147,24 @@ def build_kernel_matrix(graphs, depth):
 
     K = np.zeros((N, N))
 
-    print("\nKernel computation progress:")
-    for i in tqdm(range(N)):
-        for j in range(i, N):
-            K[i,j] = spgk(sp[i], sp[j], norm[i], norm[j])
-            K[j,i] = K[i,j]
 
-    return K
+    # print("\nKernel computation progress:")
+    # for i in tqdm(range(N)):
+    #     for j in range(i, N):
+    #         # K[i,j] = spgk(sp[i], sp[j], norm[i], norm[j])
+    #         # K[j,i] = K[i,j]
+    #         gk = WeisfeilerLehman(n_iter=1,base_graph_kernel=VertexHistogram, normalize=False)
+    #         # Construct kernel matrices
+    #         K[i,j] = gk.fit_transform(sp_g[i,j])
+    #     return K
+
+
+    
 
 
 def main():
     """ 
     Main function
-
     """
     if len(sys.argv) != 5:
         print('Wrong number of arguments!!! Run as follows:')
@@ -138,69 +194,48 @@ def main():
         labels = labels_pos
         labels.extend(labels_neg)
         labels = np.array(labels)
-
-        vocab = get_vocab(docs)
-        print("Vocabulary size: ", len(vocab))
+        train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.4, random_state=42)
+        vocab = get_vocab1(train_data,test_data)
+        print("Vocabulary Size: ", len(vocab))
+        # print(docs[0])
+        # print("------------------------------------------------------\n")
+        # print(docs[1])
+        G_train_nx = create_graphs_of_words1(train_data, vocab, window_size) 
+        G_test_nx = create_graphs_of_words1(test_data, vocab, window_size)
+        # print("Example of graph-of-words representation of document")
+        # nx.draw_networkx(G_train_nx[3], with_labels=True)
+        #G_train_nx = create_graphs_of_words(docs,window_size) 
+        G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='foo'))
+        G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='foo'))
         
-
-    #     G_train_nx = create_graphs_of_words(docs,window_size) 
-    #    G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='label'))
-    #     G_test_nx = create_graphs_of_words(docs,window_size)
-    #     G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
-        
-        graphs = create_graphs_of_words(docs, window_size)
-        #print(graphs)
-        K = build_kernel_matrix(graphs, depth)
-        print(K)
+        # print("Example of graph-of-words representation of document")
+        # nx.draw_networkx(G_train_nx[3], with_labels=True)
 
 
-        # Splits the dataset into a training and a test set
-        G_train, G_test, y_train, y_test = train_test_split(docs, labels, test_size=0.1, random_state=42)
 
-        # Uses the shortest path kernel to generate the kernel matrices
+        #G_train_nx = create_graphs_of_words(docs,window_size) 
+        # G_train = list(graph_from_networkx(G_train_nx))#, node_labels_tag="label"))
+        # G_test = list(graph_from_networkx(G_test_nx))#, node_labels_tag="foo"))
+        #print(G_train[2])
+
+        # Initialize a Weisfeiler-Lehman subtree kernel
         gk = ShortestPath(normalize=True)
+
+        # Construct kernel matrices
         K_train = gk.fit_transform(G_train)
         K_test = gk.transform(G_test)
 
-        # Uses the SVM classifier to perform classification
-        clf = SVC(kernel="precomputed")
-        clf.fit(K_train, y_train)
+        # Train an SVM classifier and make predictions
+        clf = SVC(kernel='precomputed')
+        clf.fit(K_train, y_train) 
         y_pred = clf.predict(K_test)
 
-        # Computes and prints the classification accuracy
-        acc = accuracy_score(y_test, y_pred)
-        print("Accuracy:", str(round(acc*100, 2)) + "%")
-
-        # # Splits the dataset into a training and a test set
-        # G_train, G_test, y_train, y_test = train_test_split(K, labels, test_size=0.1, random_state=42)
-
-        # # Uses the shortest path kernel to generate the kernel matrices
-        # gk = ShortestPath(normalize=True)
-        # print(gk)
-
-        # K_train = gk.fit_transform(G_train)
-        # print(K_train)
-        # K_test = gk.transform(G_test)
-
-        # Uses the SVM classifier to perform classification
-        # clf = SVC(kernel="precomputed")
-        # clf.fit(K_train, y_train)
-        # y_pred = clf.predict(K_test)
+        # Evaluate the predictions
+        print("Accuracy:", accuracy_score(y_pred, y_test))
 
 
-        # K_train = K
 
-        # labels_train = labels
 
-        # K_test = K
-        # labels_test = labels
-
-        # clf = SVC(kernel='precomputed')
-        # clf.fit(K_train, labels_train) 
-        # labels_predicted = clf.predict(K_test)
-        # acc = accuracy_score(labels_test, labels_predicted)
-        # # Computes and prints the classification accuracy
-        # #acc = accuracy_score(y_test, y_pred)
-        # print("Accuracy:", str(round(acc*100, 2)) + "%")
 if __name__ == "__main__":
-        main()
+    print("test")
+    main()

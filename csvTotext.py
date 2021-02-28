@@ -16,7 +16,7 @@ while True:
 
 with open('negativetest.neg', "w") as my_output_Neg_file:
  with open('positivetest.pos', "w") as my_output_Pos_file:
-  data = pd.read_csv('csvFew.csv',usecols=[1,2,4,7],engine="python")
+  data = pd.read_csv('csv_500.csv',usecols=[1,2,4,7],engine="python")
 
   df = pd.DataFrame(data)
 

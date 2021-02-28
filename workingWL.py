@@ -194,7 +194,7 @@ def main():
         labels = labels_pos
         labels.extend(labels_neg)
         labels = np.array(labels)
-        train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.8, random_state=42)
+        train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.33, random_state=42)
         vocab = get_vocab1(train_data,test_data)
         print("Vocabulary Size: ", len(vocab))
         # print(docs[0])
@@ -218,7 +218,7 @@ def main():
         #print(G_train[2])
 
         # Initialize a Weisfeiler-Lehman subtree kernel
-        gk = WeisfeilerLehman(n_iter=1, normalize=False, base_graph_kernel=VertexHistogram)
+        gk = WeisfeilerLehman(n_iter=4, normalize=False, base_graph_kernel=VertexHistogram)
 
         # Construct kernel matrices
         K_train = gk.fit_transform(G_train)

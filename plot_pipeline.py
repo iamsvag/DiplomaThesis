@@ -9,7 +9,8 @@ import sys
 import numpy as np
 import networkx as nx
 from tqdm import tqdm
-from utils import load_file, preprocessing, get_vocab, learn_model_and_predict
+from grakel.utils import graph_from_networkx
+from utils import load_file, preprocessing, get_vocab, learn_model_and_predict,get_vocab1
 from sklearn.svm import SVC
 #from utils2 import graph_from_networkx
 from sklearn.metrics import accuracy_score
@@ -69,6 +70,26 @@ def spgk(sp_g1, sp_g2, norm1, norm2):
         #print(kernel_value)
         
         return kernel_value
+
+def create_graphs_of_words1(docs, vocab, window_size):
+    graphs = list()
+    sizes = list()
+    degs = list()
+
+    for idx,doc in enumerate(docs):
+        G = nx.Graph()
+        for i in range(len(doc)):
+            if doc[i] not in G.nodes():
+                G.add_node(doc[i])
+                G.nodes[doc[i]]['foo'] = vocab[doc[i]]
+        for i in range(len(doc)):
+            for j in range(i+1, i+window_size):
+                if j < len(doc):
+                    G.add_edge(doc[i], doc[j])
+        
+        graphs.append(G)
+    
+    return graphs
 
 
 def build_kernel_matrix(graphs, depth):
@@ -143,7 +164,8 @@ def main():
         labels.extend(labels_neg)
         labels = np.array(labels)
 
-        vocab = get_vocab(docs)
+        train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.4, random_state=42)
+        vocab = get_vocab1(train_data,test_data)
         print("Vocabulary size: ", len(vocab))
         
 
@@ -152,44 +174,24 @@ def main():
     #     G_test_nx = create_graphs_of_words(docs,window_size)
     #     G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
         
-        graphs = create_graphs_of_words(docs, window_size)
-        K = build_kernel_matrix(graphs, depth)
+        # graphs = create_graphs_of_words(docs, window_size)
+        # K = build_kernel_matrix(graphs, depth)
+
+
+
         
-
-        # # Splits the dataset into a training and a test set
-        # G_train, G_test, y_train, y_test = train_test_split(K, labels, test_size=0.1, random_state=42)
-
-        # # Uses the shortest path kernel to generate the kernel matrices
-        # gk = ShortestPath(normalize=True)
-        # print(gk)
-
-        # K_train = gk.fit_transform(G_train)
-        # print(K_train)
-        # K_test = gk.transform(G_test)
-
-        # Uses the SVM classifier to perform classification
-        # clf = SVC(kernel="precomputed")
-        # clf.fit(K_train, y_train)
-        # y_pred = clf.predict(K_test)
-
-
-        # K_train = K
-
-        # labels_train = labels
-
-        # K_test = K
-        # labels_test = labels
-
-        # clf = SVC(kernel='precomputed')
-        # clf.fit(K_train, labels_train) 
-        # labels_predicted = clf.predict(K_test)
-        # acc = accuracy_score(labels_test, labels_predicted)
-        # Computes and prints the classification accuracy
-        #acc = accuracy_score(y_test, y_pred)
-        # print("Accuracy:", str(round(acc*100, 2)) + "%")
+        
+        G_train_nx = create_graphs_of_words1(train_data, vocab, window_size) 
+        G_test_nx = create_graphs_of_words1(test_data, vocab, window_size)
+        # print("Example of graph-of-words representation of document")
+        # nx.draw_networkx(G_train_nx[3], with_labels=True)
+        #G_train_nx = create_graphs_of_words(docs,window_size) 
+        G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='foo'))
+        G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='foo'))
+    
         labels_train = labels
         # Values of C parameter of SVM
-        C_grid = (10. ** np.arange(-4,6,1) / len(K)).tolist()
+        C_grid = (10. ** np.arange(-4,6,1) / len(G_train)).tolist()
         #print(C_grid)
         print("test1\n")
         # Creates pipeline
@@ -197,14 +199,15 @@ def main():
         print(estimator)
         print("test2\n")                
         # Performs cross-validation and computes accuracy
-        K_train = K
+        K_train = G_train
         n_folds = 10
         clf = SVC(kernel='precomputed')
         print("test3\n")
-        y_pred = cross_val_predict(estimator,K_train, labels_train, cv=n_folds)
+        y_pred = cross_val_predict(estimator,G_train, y_train, cv=n_folds)
         print(y_pred)
+
         print("test4\n")
-        acc = accuracy_score(labels_train, y_pred)
+        acc = accuracy_score(y_test, y_pred)
         print("test5\n")
         print("Accuracy:", str(round(acc*100, 2)) + "%")
         #acc = accuracy_score(labels,K_train) #cross_val_predict(estimator, K_train, labels, cv=n_folds))

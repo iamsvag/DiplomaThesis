@@ -183,7 +183,7 @@ def main():
         # for i in range(len(test_data)):
         #    y_test.append(0)
 
-        train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.33, random_state=42)
+        train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.4, random_state=42)
         print(y_test)
         print(y_train)
         vocab = get_vocab1(train_data,test_data)
