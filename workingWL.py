@@ -194,12 +194,9 @@ def main():
         labels = labels_pos
         labels.extend(labels_neg)
         labels = np.array(labels)
-        train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.33, random_state=42)
+        train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.4, random_state=42)
         vocab = get_vocab1(train_data,test_data)
         print("Vocabulary Size: ", len(vocab))
-        # print(docs[0])
-        # print("------------------------------------------------------\n")
-        # print(docs[1])
        
        
         # Create graph-of-words representations
@@ -215,7 +212,6 @@ def main():
         #G_train_nx = create_graphs_of_words(docs,window_size) 
         # G_train = list(graph_from_networkx(G_train_nx))#, node_labels_tag="label"))
         # G_test = list(graph_from_networkx(G_test_nx))#, node_labels_tag="foo"))
-        #print(G_train[2])
 
         # Initialize a Weisfeiler-Lehman subtree kernel
         gk = WeisfeilerLehman(n_iter=4, normalize=False, base_graph_kernel=VertexHistogram)

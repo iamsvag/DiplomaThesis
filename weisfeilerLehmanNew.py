@@ -92,6 +92,7 @@ def create_graphs_of_words1(docs, vocab, window_size):
         graphs.append(G)
     
     return graphs
+    
 def build_kernel_matrix(graphs, depth):
     """ 
     Build kernel matrices
@@ -193,8 +194,10 @@ def main():
         # Create graph-of-words representations
         G_train_nx = create_graphs_of_words1(train_data, vocab, window_size) 
         G_test_nx = create_graphs_of_words1(test_data, vocab, window_size)
-        # print("Example of graph-of-words representation of document")
-        # nx.draw_networkx(G_train_nx[3], with_labels=True)
+        
+        print("Example of graph-of-words representation of document")
+        nx.draw_networkx(G_train_nx[3], with_labels=True)
+        
         #G_train_nx = create_graphs_of_words(docs,window_size) 
         G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='foo'))
         G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='foo'))
@@ -206,7 +209,7 @@ def main():
         # Loads the MUTAG dataset
         #print(docs)
         # Initialize a Weisfeiler-Lehman subtree kernel
-        gk = WeisfeilerLehman(n_iter=1, normalize=False, base_graph_kernel=VertexHistogram)
+        gk = WeisfeilerLehman(n_iter=4, normalize=False, base_graph_kernel=VertexHistogram)
 
         # Construct kernel matrices
         K_train = gk.fit_transform(G_train)

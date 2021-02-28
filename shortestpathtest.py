@@ -18,11 +18,13 @@ from sklearn.model_selection import train_test_split
 from grakel.kernels import Kernel
 #from grakel.datasets import fetch_dataset
 from grakel.kernels import ShortestPath
-from grakel.kernels import WeisfeilerLehman, VertexHistogram
+from grakel.kernels import WeisfeilerLehman, VertexHistogram , PropagationAttr , ShortestPath , PyramidMatch
 #from grakel.kernels.vertex_histogram import VertexHistogram
 from grakel.datasets import fetch_dataset
 from grakel import Graph
 #from GK_WL import GK_WL
+import warnings
+warnings.filterwarnings('ignore')
 
 def create_graphs_of_words(docs, window_size):
     """ 
@@ -74,13 +76,13 @@ def create_graphs_of_words1(docs, vocab, window_size):
     graphs = list()
     sizes = list()
     degs = list()
-    #print(vocab)
+    print(vocab)
     for idx,doc in enumerate(docs):
         G = nx.Graph()
         for i in range(len(doc)):
             if doc[i] not in G.nodes():
                 G.add_node(doc[i])
-                G.nodes[doc[i]]['foo'] = vocab[doc[i]]
+                G.nodes[doc[i]]['label'] = vocab[doc[i]]
                 
                 
         for i in range(len(doc)):
@@ -197,16 +199,12 @@ def main():
         train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.4, random_state=42)
         vocab = get_vocab1(train_data,test_data)
         print("Vocabulary Size: ", len(vocab))
-        # print(docs[0])
-        # print("------------------------------------------------------\n")
-        # print(docs[1])
-        G_train_nx = create_graphs_of_words1(train_data, vocab, window_size) 
-        G_test_nx = create_graphs_of_words1(test_data, vocab, window_size)
-        # print("Example of graph-of-words representation of document")
-        # nx.draw_networkx(G_train_nx[3], with_labels=True)
-        #G_train_nx = create_graphs_of_words(docs,window_size) 
-        G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='foo'))
-        G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='foo'))
+       
+       
+        # Create graph-of-words representations
+        G_train = create_author_graph_of_words(train_data, vocab, window_size) 
+        G_test = create_author_graph_of_words(test_data, vocab, window_size)
+        
         
         # print("Example of graph-of-words representation of document")
         # nx.draw_networkx(G_train_nx[3], with_labels=True)
@@ -216,11 +214,10 @@ def main():
         #G_train_nx = create_graphs_of_words(docs,window_size) 
         # G_train = list(graph_from_networkx(G_train_nx))#, node_labels_tag="label"))
         # G_test = list(graph_from_networkx(G_test_nx))#, node_labels_tag="foo"))
-        #print(G_train[2])
 
         # Initialize a Weisfeiler-Lehman subtree kernel
-        gk = ShortestPath(normalize=True)
-
+        #gk = ShortestPath(n_jobs=None, normalize=False, verbose=False, with_labels=True, algorithm_type="auto")
+        gk = PyramidMatch(n_jobs=None, normalize=False, verbose=False, with_labels=True, L=4, d=6)
         # Construct kernel matrices
         K_train = gk.fit_transform(G_train)
         K_test = gk.transform(G_test)

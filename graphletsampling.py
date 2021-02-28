@@ -219,7 +219,7 @@ def main():
         #print(G_train[2])
 
         # Initialize a Weisfeiler-Lehman subtree kernel
-        gk = GraphletSampling(normalize=False)
+        gk = GraphletSampling(n_jobs=None, normalize=False, verbose=False, random_state=None, k=5, sampling=None)
 
         # Construct kernel matrices
         K_train = gk.fit_transform(G_train)
