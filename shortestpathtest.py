@@ -150,17 +150,6 @@ def build_kernel_matrix(graphs, depth):
     K = np.zeros((N, N))
 
 
-    # print("\nKernel computation progress:")
-    # for i in tqdm(range(N)):
-    #     for j in range(i, N):
-    #         # K[i,j] = spgk(sp[i], sp[j], norm[i], norm[j])
-    #         # K[j,i] = K[i,j]
-    #         gk = WeisfeilerLehman(n_iter=1,base_graph_kernel=VertexHistogram, normalize=False)
-    #         # Construct kernel matrices
-    #         K[i,j] = gk.fit_transform(sp_g[i,j])
-    #     return K
-
-
     
 
 
@@ -216,8 +205,8 @@ def main():
         # G_test = list(graph_from_networkx(G_test_nx))#, node_labels_tag="foo"))
 
         # Initialize a Weisfeiler-Lehman subtree kernel
-        #gk = ShortestPath(n_jobs=None, normalize=False, verbose=False, with_labels=True, algorithm_type="auto")
-        gk = PyramidMatch(n_jobs=None, normalize=False, verbose=False, with_labels=True, L=4, d=6)
+        gk = ShortestPath(n_jobs=None, normalize=False, verbose=False, with_labels=True, algorithm_type="auto")
+        #gk = PyramidMatch(n_jobs=None, normalize=False, verbose=False, with_labels=True, L=4, d=6)
         # Construct kernel matrices
         K_train = gk.fit_transform(G_train)
         K_test = gk.transform(G_test)

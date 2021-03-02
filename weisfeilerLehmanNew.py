@@ -195,8 +195,8 @@ def main():
         G_train_nx = create_graphs_of_words1(train_data, vocab, window_size) 
         G_test_nx = create_graphs_of_words1(test_data, vocab, window_size)
         
-        print("Example of graph-of-words representation of document")
-        nx.draw_networkx(G_train_nx[3], with_labels=True)
+        #print("Example of graph-of-words representation of document")
+        #nx.draw_networkx(G_train_nx[3], with_labels=True)
         
         #G_train_nx = create_graphs_of_words(docs,window_size) 
         G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='foo'))
@@ -204,56 +204,21 @@ def main():
     #   G_test_nx = create_graphs_of_words(docs,window_size)
     #   G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
         
-        #graphs = create_graphs_of_words(docs, window_size)
-        # K = build_kernel_matrix(graphs, depth)
-        # Loads the MUTAG dataset
-        #print(docs)
         # Initialize a Weisfeiler-Lehman subtree kernel
         gk = WeisfeilerLehman(n_iter=4, normalize=False, base_graph_kernel=VertexHistogram)
-
+        #gk = ShortestPath()
         # Construct kernel matrices
         K_train = gk.fit_transform(G_train)
         print(K_train)
         K_test = gk.transform(G_test)
 
-        # Train an SVM classifier and make predictions
+        # Train an SVM classifier and make predictions  
         clf = SVC(kernel='precomputed')
         clf.fit(K_train,y_train) 
         y_pred = clf.predict(K_test)
 
         # Evaluate the predictions
         print("Accuracy:", accuracy_score(y_test, y_pred))
-
-        # #print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-        # #working part
-        # MUTAG = fetch_dataset("MUTAG", verbose=False)
-        # print(MUTAG)
-        # G, y = MUTAG.data, MUTAG.target
-        # G_train, G_test, y_train, y_test = train_test_split(G, y, test_size=0.1, random_state=42)
-
-        # # Uses the Weisfeiler-Lehman subtree kernel to generate the kernel matrices
-        # gk = WeisfeilerLehman(n_iter=4, base_graph_kernel=VertexHistogram, normalize=True)
-        # K_train = gk.fit_transform(G_train)
-        # K_test = gk.transform(G_test)
-
-        # # Uses the SVM classifier to perform classification
-        # clf = SVC(kernel="precomputed")
-        # clf.fit(K_train, y_train)
-        # y_pred = clf.predict(K_test)
-
-        # # Computes and prints the classification accuracy
-        # acc = accuracy_score(y_test, y_pred)
-        # print("Accuracy:", str(round(acc*100, 2)) + "%")
-        # #print(G) 
-        # # print(G_train)
-        # #print(y)
-        # # print(labels)
-        # # Splits the dataset into a training and a test set
-        # # print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-
-
-
-
 
 
 if __name__ == "__main__":
