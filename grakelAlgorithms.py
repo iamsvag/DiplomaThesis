@@ -17,7 +17,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from grakel.kernels import Kernel
 #from grakel.datasets import fetch_dataset
-from grakel.kernels import ShortestPath
+from grakel.kernels import ShortestPath , PyramidMatch
 from grakel.kernels import WeisfeilerLehman, VertexHistogram
 #from grakel.kernels.vertex_histogram import VertexHistogram
 from grakel.datasets import fetch_dataset
@@ -203,28 +203,39 @@ def main():
         G_train = create_author_graph_of_words(train_data, vocab, window_size) 
         G_test = create_author_graph_of_words(test_data, vocab, window_size)
         
-        
-        # Initialize a Weisfeiler-Lehman subtree kernel
-        gk = WeisfeilerLehman(n_iter=4, normalize=False, base_graph_kernel=VertexHistogram)
+        strings = ["ShortestPath","WeisfeilerLehman","PyramidMatch"]
 
-        # Construct kernel matrices
-        K_train = gk.fit_transform(G_train)
-        K_test = gk.transform(G_test)
+        i=1
+        for i in range(3):
+            if strings[i] == "ShortestPath":
+                print("1")
+                # Initialize a ShortestPath kernel
+                gk = ShortestPath(n_jobs=None, normalize=False, verbose=False, with_labels=False, algorithm_type="auto")
+            elif  strings[i] == "WeisfeilerLehman":
+                print("2")
+                # Initialize a Weisfeiler-Lehman subtree kernel
+                gk = WeisfeilerLehman(n_iter=4, normalize=False, base_graph_kernel=VertexHistogram)
+            else:
+                print("3")
+                gk = PyramidMatch(n_jobs=None, normalize=False, verbose=False, with_labels=False, L=4, d=6)
+            # Construct kernel matrices
+            K_train = gk.fit_transform(G_train)
+            K_test = gk.transform(G_test)
 
-        # Train an SVM classifier and make predictions
-        clf = SVC(kernel='precomputed')
-        clf.fit(K_train, y_train) 
-        y_pred = clf.predict(K_test)
+            # Train an SVM classifier and make predictions
+            clf = SVC(kernel='precomputed')
+            clf.fit(K_train, y_train) 
+            y_pred = clf.predict(K_test)
 
-        # Evaluate the predictions
-        print("Accuracy:", accuracy_score(y_pred, y_test))
-        end = timer()
-        print(end - start)
-        
+            # Evaluate the predictions
+            print("Accuracy:", accuracy_score(y_pred, y_test))
+            end = timer()
+            print(end - start)
+            
         #a log scale example
         fig4 = figure(title='Dataset Size Execution Time',ylabel='Seconds')
         xVals = ['Dataset Size',1700,1800,1900,2000]
-        yVals = [['Shortest Path', 'Weisfeiler-Lehman'],[0,12],[100,200],[100,50],[500,100]]
+        yVals = [['Shortest Path', 'Weisfeiler-Lehman','PyramidMatch'],[0,0,0],[100,200,100],[100,50,50],[500,100,200]]
         fig4.plot(xVals,yVals,logScale=False)
      
 

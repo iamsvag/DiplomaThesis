@@ -17,14 +17,12 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from grakel.kernels import Kernel
 #from grakel.datasets import fetch_dataset
-from grakel.kernels import ShortestPath
-from grakel.kernels import WeisfeilerLehman, VertexHistogram , PropagationAttr , ShortestPath , PyramidMatch
+from grakel.kernels import ShortestPath , PyramidMatch
+from grakel.kernels import WeisfeilerLehman, VertexHistogram
 #from grakel.kernels.vertex_histogram import VertexHistogram
 from grakel.datasets import fetch_dataset
 from grakel import Graph
 #from GK_WL import GK_WL
-import warnings
-warnings.filterwarnings('ignore')
 
 def create_graphs_of_words(docs, window_size):
     """ 
@@ -107,11 +105,8 @@ def create_author_graph_of_words(docs, voc, window_size):
                 if j < len(doc):
                     unique_words.add(doc[j])
                     edge_tuple1 = (doc[i], doc[j])
-                    #edge_tuple2 = (doc[j], doc[i])
                     if edge_tuple1 in edges:
                         edges[edge_tuple1] += 1
-                    # elif edge_tuple2 in edges:
-                    #     edges[edge_tuple2] += 1
                     else:
                         edges[edge_tuple1] = 1
         node_labels = {word:voc[word] for word in unique_words}
@@ -148,6 +143,17 @@ def build_kernel_matrix(graphs, depth):
         norm.append(np.linalg.norm(M,'fro'))
 
     K = np.zeros((N, N))
+
+
+    # print("\nKernel computation progress:")
+    # for i in tqdm(range(N)):
+    #     for j in range(i, N):
+    #         # K[i,j] = spgk(sp[i], sp[j], norm[i], norm[j])
+    #         # K[j,i] = K[i,j]
+    #         gk = WeisfeilerLehman(n_iter=1,base_graph_kernel=VertexHistogram, normalize=False)
+    #         # Construct kernel matrices
+    #         K[i,j] = gk.fit_transform(sp_g[i,j])
+    #     return K
 
 
     
@@ -203,10 +209,11 @@ def main():
         #G_train_nx = create_graphs_of_words(docs,window_size) 
         # G_train = list(graph_from_networkx(G_train_nx))#, node_labels_tag="label"))
         # G_test = list(graph_from_networkx(G_test_nx))#, node_labels_tag="foo"))
-
+        print("test1234")
         # Initialize a Weisfeiler-Lehman subtree kernel
-        gk = ShortestPath(n_jobs=None, normalize=False, verbose=False, with_labels=True, algorithm_type="auto")
-        #gk = PyramidMatch(n_jobs=None, normalize=False, verbose=False, with_labels=True, L=4, d=6)
+        gk = ShortestPath(n_jobs=None, normalize=False, verbose=False, with_labels=False, algorithm_type="auto")
+        gk = PyramidMatch(n_jobs=None, normalize=False, verbose=False, with_labels=False, L=4, d=6)
+
         # Construct kernel matrices
         K_train = gk.fit_transform(G_train)
         K_test = gk.transform(G_test)
