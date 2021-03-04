@@ -205,12 +205,15 @@ def main():
         
         strings = ["ShortestPath","WeisfeilerLehman","PyramidMatch"]
 
-        i=1
+
+        
         for i in range(3):
+            
             if strings[i] == "ShortestPath":
                 print("1")
                 # Initialize a ShortestPath kernel
                 gk = ShortestPath(n_jobs=None, normalize=False, verbose=False, with_labels=False, algorithm_type="auto")
+                
             elif  strings[i] == "WeisfeilerLehman":
                 print("2")
                 # Initialize a Weisfeiler-Lehman subtree kernel
@@ -218,6 +221,7 @@ def main():
             else:
                 print("3")
                 gk = PyramidMatch(n_jobs=None, normalize=False, verbose=False, with_labels=False, L=4, d=6)
+        #gk = ShortestPath(n_jobs=None, normalize=False, verbose=False, with_labels=False, algorithm_type="auto")
             # Construct kernel matrices
             K_train = gk.fit_transform(G_train)
             K_test = gk.transform(G_test)
@@ -237,10 +241,7 @@ def main():
         xVals = ['Dataset Size',1700,1800,1900,2000]
         yVals = [['Shortest Path', 'Weisfeiler-Lehman','PyramidMatch'],[0,0,0],[100,200,100],[100,50,50],[500,100,200]]
         fig4.plot(xVals,yVals,logScale=False)
-     
-
-
-
+        
 if __name__ == "__main__":
     print("test")
     main()

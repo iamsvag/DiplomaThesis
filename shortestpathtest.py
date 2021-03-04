@@ -212,7 +212,7 @@ def main():
         print("test1234")
         # Initialize a Weisfeiler-Lehman subtree kernel
         gk = ShortestPath(n_jobs=None, normalize=False, verbose=False, with_labels=False, algorithm_type="auto")
-        gk = PyramidMatch(n_jobs=None, normalize=False, verbose=False, with_labels=False, L=4, d=6)
+        #gk = PyramidMatch(n_jobs=None, normalize=False, verbose=False, with_labels=False, L=4, d=6)
 
         # Construct kernel matrices
         K_train = gk.fit_transform(G_train)

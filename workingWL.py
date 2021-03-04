@@ -205,8 +205,8 @@ def main():
         
         
         # Initialize a Weisfeiler-Lehman subtree kernel
-        gk = WeisfeilerLehman(n_iter=4, normalize=False, base_graph_kernel=VertexHistogram)
-
+        #gk = WeisfeilerLehman(n_iter=4, normalize=False, base_graph_kernel=VertexHistogram)
+        gk = ShortestPath(n_jobs=None, normalize=False, verbose=False, with_labels=False, algorithm_type="auto")
         # Construct kernel matrices
         K_train = gk.fit_transform(G_train)
         K_test = gk.transform(G_test)
