@@ -10,19 +10,14 @@ import matplotlib.pyplot as plt
 from grakel.utils import graph_from_networkx
 from tqdm import tqdm
 from utils import load_file, preprocessing, get_vocab, learn_model_and_predict, get_vocab1
-#from utilsNew import get_vocab1
 from sklearn.svm import SVC
-#from utils2 import graph_from_networkx
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from grakel.kernels import Kernel
-#from grakel.datasets import fetch_dataset
 from grakel.kernels import ShortestPath , PyramidMatch
 from grakel.kernels import WeisfeilerLehman, VertexHistogram
-#from grakel.kernels.vertex_histogram import VertexHistogram
 from grakel.datasets import fetch_dataset
 from grakel import Graph
-#from GK_WL import GK_WL
 from timeit import default_timer as timer
 from gpcharts import figure
 
@@ -118,49 +113,6 @@ def create_author_graph_of_words(docs, voc, window_size):
     return graphs
 
 
-def build_kernel_matrix(graphs, depth):
-    """ 
-    Build kernel matrices
-    """
-    N = len(graphs)
-    #print(N)
-
-    sp = list()
-    norm = list()
-
-    print("\nGraph preprocessing progress:")
-    for g in tqdm(graphs):
-        current_sp = dict(nx.all_pairs_dijkstra_path_length(g, cutoff=depth))
-        sp.append(current_sp)
-
-        sp_g = nx.Graph()
-        for node in current_sp:
-            for neighbor in current_sp[node]:
-                if node == neighbor:
-                    sp_g.add_edge(node, node, weight=1.0)
-                else:
-                    sp_g.add_edge(node, neighbor, weight=1.0/current_sp[node][neighbor])
-
-        M = nx.to_numpy_matrix(sp_g)
-        norm.append(np.linalg.norm(M,'fro'))
-
-    K = np.zeros((N, N))
-
-
-    # print("\nKernel computation progress:")
-    # for i in tqdm(range(N)):
-    #     for j in range(i, N):
-    #         # K[i,j] = spgk(sp[i], sp[j], norm[i], norm[j])
-    #         # K[j,i] = K[i,j]
-    #         gk = WeisfeilerLehman(n_iter=1,base_graph_kernel=VertexHistogram, normalize=False)
-    #         # Construct kernel matrices
-    #         K[i,j] = gk.fit_transform(sp_g[i,j])
-    #     return K
-
-
-    
-
-
 def main():
     """ 
     Main function
@@ -173,11 +125,8 @@ def main():
         filename_neg = sys.argv[2]
         window_size = int(sys.argv[3])
         depth = int(sys.argv[4])
-
         docs_pos = load_file(filename_pos)
-       # print(docs_pos)
         docs_pos = preprocessing(docs_pos)
-       # print(docs_pos)
         labels_pos = []
         for i in range(len(docs_pos)):
             labels_pos.append(1)
@@ -193,55 +142,63 @@ def main():
         labels = labels_pos
         labels.extend(labels_neg)
         labels = np.array(labels)
-        train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.4, random_state=42)
+        train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.33, random_state=42)
         vocab = get_vocab1(train_data,test_data)
         print("Vocabulary Size: ", len(vocab))
-        start = timer()
+        
        
         
         # Create graph-of-words representations
         G_train = create_author_graph_of_words(train_data, vocab, window_size) 
         G_test = create_author_graph_of_words(test_data, vocab, window_size)
         
-        strings = ["ShortestPath","WeisfeilerLehman","PyramidMatch"]
+        strings = ["WeisfeilerLehman","ShortestPath","PyramidMatch"]
 
 
-        
+        print("\nKernel computation progress:")
         for i in range(3):
-            
-            if strings[i] == "ShortestPath":
-                print("1")
-                # Initialize a ShortestPath kernel
-                gk = ShortestPath(n_jobs=None, normalize=False, verbose=False, with_labels=False, algorithm_type="auto")
-                
-            elif  strings[i] == "WeisfeilerLehman":
-                print("2")
+            start = timer()
+            if strings[i] == "WeisfeilerLehman":
+                print("\nAccuracy Calculation with Wiesfeiler-Lehman Algorith")
                 # Initialize a Weisfeiler-Lehman subtree kernel
                 gk = WeisfeilerLehman(n_iter=4, normalize=False, base_graph_kernel=VertexHistogram)
+                
+            elif  strings[i] == "ShortestPath":
+                print("\nAccuracy Calculation with ShortestPath Algorith")
+                # Initialize a Shortest path 
+                gk = ShortestPath(n_jobs=None, normalize=False, verbose=False, with_labels=False, algorithm_type="auto")
             else:
-                print("3")
+                print("\nAccuracy Calculation with Pyramid Match Algorith")
                 gk = PyramidMatch(n_jobs=None, normalize=False, verbose=False, with_labels=False, L=4, d=6)
-        #gk = ShortestPath(n_jobs=None, normalize=False, verbose=False, with_labels=False, algorithm_type="auto")
             # Construct kernel matrices
             K_train = gk.fit_transform(G_train)
             K_test = gk.transform(G_test)
 
-            # Train an SVM classifier and make predictions
+            #SVM classifier Training & Predictions 
             clf = SVC(kernel='precomputed')
             clf.fit(K_train, y_train) 
             y_pred = clf.predict(K_test)
 
-            # Evaluate the predictions
-            print("Accuracy:", accuracy_score(y_pred, y_test))
+            #Evaluation of predictions
+            acc =  accuracy_score(y_pred, y_test)
+            print("\nAccuracy:", str(round(acc*100, 2)) + "%" )
             end = timer()
-            print(end - start)
+            execTime = end - start
+            print("\n Execution Time:")
+            print(execTime,"Seconds") 
+
             
         #a log scale example
         fig4 = figure(title='Dataset Size Execution Time',ylabel='Seconds')
-        xVals = ['Dataset Size',1700,1800,1900,2000]
+        xVals = ['Dataset Size',100,1800,1900,2000]
         yVals = [['Shortest Path', 'Weisfeiler-Lehman','PyramidMatch'],[0,0,0],[100,200,100],[100,50,50],[500,100,200]]
         fig4.plot(xVals,yVals,logScale=False)
         
+        # #a log scale example
+        # fig4 = figure(title='Dataset Size Execution Time',ylabel='Accuracy')
+        # xVals = ['Dataset Size',100,1800,1900,2000]
+        # yVals = [['Shortest Path', 'Weisfeiler-Lehman','PyramidMatch'],[0,0,0],[100,200,100],[100,50,50],[500,100,200]]
+        # fig4.plot(xVals,yVals,logScale=False)
+        
 if __name__ == "__main__":
-    print("test")
     main()
