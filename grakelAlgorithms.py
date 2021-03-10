@@ -1,7 +1,4 @@
-"""
-Created on Fri Apr 14 2017
-@author: g.nikolentzos
-"""
+
 
 import sys
 import numpy as np
