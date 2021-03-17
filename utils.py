@@ -1,9 +1,4 @@
-"""
-Created on Fri Apr 14 2017
 
-@author: g.nikolentzos
-
-"""
 
 import numpy as np
 import string
@@ -27,19 +22,7 @@ def load_file(filename):
 
     return docs
 
-def load_file1(filename):
-    labels = []
-    docs =[]
-    with open(filename, encoding='utf8', errors='ignore') as f:
-        for line in f:
-            print(line + "\n")
-            content = line.split('\t')
-            print(content + "\n")
-            labels.append(content[0])
-            print(labels)
-            docs.append(content[1][:-1])
-    
-    return docs,labels  
+ 
 def clean_str(string):
     """
     Tokenization/string cleaning for all datasets.
@@ -74,19 +57,6 @@ def preprocessing(docs):
     return preprocessed_docs
 
 
-def get_vocab(docs):
-    """ 
-    Get vocabulary.
-
-    """
-    vocab = set()
-
-    for doc in docs:
-        for word in doc:
-            vocab.add(word)
-        
-    return vocab
-
 def clean_str1(string):
     string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)     
     string = re.sub(r"\'s", " \'s", string) 
@@ -115,7 +85,7 @@ def preprocessing1(docs):
     
     return preprocessed_docs
 
-def get_vocab1(train_docs, test_docs):
+def get_vocab(train_docs, test_docs):
     vocab = dict()
     
     for doc in train_docs:
@@ -129,105 +99,4 @@ def get_vocab1(train_docs, test_docs):
                 vocab[word] = len(vocab)
         
     return vocab
-
-def learn_model_and_predict(K, labels):
-    #print(K,labels)
-    """
-    Given a kernel matrix, performs 10-fold cross-validation using an SVM and returns classification accuracy.
-    At each iteration the optimal value of parameter C is determined using again cross-validation.
-
-    """
-    print("\nStarted 10-fold cross validation:")
-
-    # Number of folds
-    cv = 10
-
-    # Specify range of C values
-    C_range = 10. ** np.arange(1,5,1)
-
-    # Output variables
-    result = {}
-    result["opt_c"] = np.zeros(cv)
-    result["accuracy"] = np.zeros(cv)
-    result["f1_score"] = np.zeros(cv)
-
-    kf = KFold(n_splits=cv, shuffle=True, random_state=None)
-
-    # Current iteration
-    iteration = 0
-
-    #Perform k-fold cv
-    for train_indices_kf, test_indices_kf in kf.split(K,labels):
-	  
-        labels_current = labels[train_indices_kf]
-        #print(train_indices_kf,test_indices_kf)   
-        K_train = K[np.ix_(train_indices_kf, train_indices_kf)]
-        labels_train = labels[train_indices_kf]
-        print(K_train,labels_train)
-        print("-----------------------------------------------------------------")
-        K_test = K[np.ix_(test_indices_kf, train_indices_kf)]
-        labels_test = labels[test_indices_kf]
-        print(K_test,labels_test)
-
-        # Optimize parameter C
-        sss = StratifiedShuffleSplit(n_splits=1, test_size=0.1, random_state=None)
-        for train_index, test_index in sss.split(K_train, labels_train):
-            K_C_train = K[np.ix_(train_index, train_index)]
-            labels_C_train = labels[train_index]
-
-            K_C_test = K[np.ix_(test_index, train_index)]
-            labels_C_test = labels[test_index]
-
-            best_C_acc = -1
-            for i in range(C_range.shape[0]):
-                C = C_range[i]
-                clf = SVC(C=C,kernel='precomputed')
-                clf.fit(K_C_train, labels_C_train) 
-                labels_predicted = clf.predict(K_C_test)
-                if accuracy_score(labels_C_test, labels_predicted) > best_C_acc:
-                    best_C_acc = accuracy_score(labels_C_test, labels_predicted)
-                    result["opt_c"][iteration] = C
-
-        clf = SVC(C=result["opt_c"][iteration],kernel='precomputed')
-        clf.fit(K_train, labels_train) 
-        labels_predicted = clf.predict(K_test)
-        result["accuracy"][iteration] = accuracy_score(labels_test, labels_predicted)
-        result["f1_score"][iteration] = precision_recall_fscore_support(labels_test, labels_predicted, pos_label=None, average='macro')[2]
-        iteration += 1
-        print("Iteration " + str(iteration) + " complete")
-
-    result["mean_accuracy"] = np.mean(result["accuracy"]) 
-    result["mean_f1_score"] = np.mean(result["f1_score"])
-    result["std"] = np.std(result["accuracy"])
-
-    print("\nAverage accuracy: ", result["mean_accuracy"])
-    print("Average macro f1-score: ", result["mean_f1_score"])
-    print("-------------------------------------------------")
-
-
-
-    # def learn_and_predict(K, labels):
-
-    
-    #     #  for train_indices_kf, test_indices_kf in kf.split(K,labels):
-    #     #      labels_current = labels[train_indices_kf]
-    #     #         #print(train_indices_kf,test_indices_kf)   
-    #     #         K_train = K[np.ix_(train_indices_kf, train_indices_kf)]
-    #     #         labels_train = labels[train_indices_kf]
-
-    #     #         K_test = K[np.ix_(test_indices_kf, train_indices_kf)]
-    #     #         labels_test = labels[test_indices_kf]
-
-    #     K_train = K.fit_transform()
-    #     K_test = K.fit_transform(K)
-
-    #         # Train an SVM classifier and make predictions
-    #     clf = SVC(kernel='precomputed')
-    #         # clf.fit(K_train, labels_train) 
-    #     clf.fit(K_train)
-    #     y_pred = clf.predict(K_test)
-
-    #   # Evaluate the predictions
-    #     print("Accuracy:", accuracy_score(y_pred, y_test))
-
 

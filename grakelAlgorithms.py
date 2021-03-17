@@ -18,32 +18,6 @@ from grakel import Graph
 from timeit import default_timer as timer
 from gpcharts import figure
 
-def create_graphs_of_words(docs, window_size):
-    """ 
-    Create graphs of words
-    """
-    graphs = list()
-    sizes = list()
-    degs = list()
-
-    for doc in docs:
-        G = nx.Graph()
-        for i in range(len(doc)):
-            if doc[i] not in G.nodes():
-                G.add_node(doc[i])
-            for j in range(i+1, i+window_size):
-                if j < len(doc):
-                    G.add_edge(doc[i], doc[j])
-
-        graphs.append(G)
-        sizes.append(G.number_of_nodes())
-        degs.append(2.0*G.number_of_edges()/G.number_of_nodes())
-
-    print("Average number of nodes:", np.mean(sizes))
-    print("Average degree:", np.mean(degs))
-
-    return graphs
-
 
 def spgk(sp_g1, sp_g2, norm1, norm2):
     """ 
@@ -88,7 +62,7 @@ def create_graphs_of_words1(docs, vocab, window_size):
 
 
 
-def create_author_graph_of_words(docs, voc, window_size):
+def create_graph_of_words(docs, voc, window_size):
     graphs = []
     for doc in docs:
         edges = {}
@@ -140,14 +114,14 @@ def main():
         labels.extend(labels_neg)
         labels = np.array(labels)
         train_data, test_data, y_train, y_test = train_test_split(docs, labels, test_size=0.33, random_state=42)
-        vocab = get_vocab1(train_data,test_data)
+        vocab = get_vocab(train_data,test_data)
         print("Vocabulary Size: ", len(vocab))
         
        
         
         # Create graph-of-words representations
-        G_train = create_author_graph_of_words(train_data, vocab, window_size) 
-        G_test = create_author_graph_of_words(test_data, vocab, window_size)
+        G_train = create_graph_of_words(train_data, vocab, window_size) 
+        G_test = create_graph_of_words(test_data, vocab, window_size)
         
         strings = ["WeisfeilerLehman","ShortestPath","PyramidMatch"]
 
@@ -185,17 +159,6 @@ def main():
             print(execTime,"Seconds") 
 
             
-        #a log scale example
-        fig4 = figure(title='Dataset Size Execution Time',ylabel='Seconds')
-        xVals = ['Dataset Size',100,1800,1900,2000]
-        yVals = [['Shortest Path', 'Weisfeiler-Lehman','PyramidMatch'],[0,0,0],[100,200,100],[100,50,50],[500,100,200]]
-        fig4.plot(xVals,yVals,logScale=False)
-        
-        # #a log scale example
-        # fig4 = figure(title='Dataset Size Execution Time',ylabel='Accuracy')
-        # xVals = ['Dataset Size',100,1800,1900,2000]
-        # yVals = [['Shortest Path', 'Weisfeiler-Lehman','PyramidMatch'],[0,0,0],[100,200,100],[100,50,50],[500,100,200]]
-        # fig4.plot(xVals,yVals,logScale=False)
-        
+
 if __name__ == "__main__":
     main()
