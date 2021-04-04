@@ -6,7 +6,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from grakel.utils import graph_from_networkx
 from tqdm import tqdm
-from utils import load_file, preprocessing, get_vocab, learn_model_and_predict, get_vocab1
+from utils import load_file, preprocessing, get_vocab
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
