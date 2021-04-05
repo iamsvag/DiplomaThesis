@@ -17,6 +17,10 @@ from grakel.datasets import fetch_dataset
 from grakel import Graph
 from timeit import default_timer as timer
 from gpcharts import figure
+from sklearn.model_selection import cross_val_predict
+from sklearn.pipeline import make_pipeline
+from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV
 
 
 def spgk(sp_g1, sp_g2, norm1, norm2):
@@ -123,43 +127,20 @@ def main():
         G_train = create_graph_of_words(train_data, vocab, window_size) 
         G_test = create_graph_of_words(test_data, vocab, window_size)
         
-        strings = ["WeisfeilerLehman","ShortestPath","PyramidMatch"]
+        # Values of C parameter of SVM
+        C_grid = (10. ** np.arange(-4,6,1) / len(G_train)).tolist()
 
+        # Creates pipeline
+        estimator = make_pipeline(
+            ShortestPath(normalize=True),
+            GridSearchCV(SVC(kernel='precomputed'), dict(C=C_grid),
+                        scoring='accuracy', cv=10))
 
-        print("\nKernel computation progress:")
-        # for i in range(3):
-        #     start = timer()
-        #     if strings[i] == "WeisfeilerLehman":
-        #         print("\nAccuracy Calculation with Wiesfeiler-Lehman Algorith")
-        #         # Initialize a Weisfeiler-Lehman subtree kernel
-        #         gk = WeisfeilerLehman(n_iter=4, normalize=False, base_graph_kernel=VertexHistogram)
-                
-        #     elif  strings[i] == "ShortestPath":
-        #         print("\nAccuracy Calculation with ShortestPath Algorith")
-        #         # Initialize a Shortest path 
-        #         gk = ShortestPath(n_jobs=None, normalize=False, verbose=False, with_labels=False, algorithm_type="auto")
-        #     else:
-        #         print("\nAccuracy Calculation with Pyramid Match Algorith")
-        #         gk = PyramidMatch(n_jobs=None, normalize=False, verbose=False, with_labels=False, L=4, d=6)
-
-        start = timer()
-        gk = WeisfeilerLehman(n_iter=4, normalize=False, base_graph_kernel=VertexHistogram)
-            # Construct kernel matrices
-        K_train = gk.fit_transform(G_train)
-        K_test = gk.transform(G_test)
-
-            #SVM classifier Training & Predictions 
-        clf = SVC(kernel='precomputed')
-        clf.fit(K_train, y_train) 
-        y_pred = clf.predict(K_test)
-
-            #Evaluation of predictionsgit 
-        acc =  accuracy_score(y_pred, y_test)
-        print("\nAccuracy:", str(round(acc*100, 2)) + "%")
-        end = timer()
-        execTime = end - start
-        print("\n Execution Time:")
-        print(execTime,"Seconds") 
+        # Performs cross-validation and computes accuracy
+        n_folds = 10
+        acc = accuracy_score(G_test, cross_val_predict(estimator, G_train, G_test, cv=n_folds))
+        print("Accuracy:", str(round(acc*100, 2)) + "%")   
+            
 
             
 
